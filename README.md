@@ -1,2 +1,2 @@
 # gobi
-Desarrollo de una app en prueba
+Desarrollo de una app en prueba 2025
