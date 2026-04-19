@@ -108,26 +108,26 @@ frontend/src/
 [x] /src/app/layout.tsx   (título "GOBi", Navbar, metadata)
 ```
 
-### Bloque 4 — Features y páginas ← SIGUIENTE
+### Bloque 4 — Features y páginas ✅
 ```
-[ ] /src/features/proyectos/ProyectoCard.tsx
-[ ] /src/features/proyectos/FiltrosProyecto.tsx
-[ ] /src/app/proyectos/page.tsx
-[ ] /src/app/proyectos/[id]/page.tsx
-[ ] /src/app/diputados/page.tsx
-[ ] /src/app/page.tsx                (home: feed con BadgePrioridad)
+[x] /src/features/proyectos/ProyectoCard.tsx
+[x] /src/features/proyectos/FiltrosProyecto.tsx
+[x] /src/app/proyectos/page.tsx
+[x] /src/app/proyectos/[id]/page.tsx
+[x] /src/app/diputados/page.tsx
+[x] /src/app/page.tsx                (home: feed con BadgePrioridad)
 ```
 
 ### Checklist de cierre de Fase 1
 ```
 [ ] Tipos definidos y sin errores TS
 [ ] Mock data completo (proyectos con historial y votos)
-[ ] Feed home con jerarquía urgente/en_debate/actualizado
-[ ] Listado /proyectos con filtros en URL (estado, tema, búsqueda)
-[ ] Detalle /proyectos/[id] con timeline y tabla de votos
-[ ] Listado /diputados con card básica
+[x] Feed home con jerarquía urgente/en_debate/actualizado
+[x] Listado /proyectos con filtros en URL (estado, tema, búsqueda)
+[x] Detalle /proyectos/[id] con timeline y tabla de votos
+[x] Listado /diputados con card básica
 [x] Navbar con links a todas las secciones
-[ ] EmptyState visible cuando no hay resultados
+[x] EmptyState visible cuando no hay resultados
 [ ] npm run build sin errores
 ```
 
