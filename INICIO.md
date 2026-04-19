@@ -16,11 +16,11 @@ legislativa en información navegable, entendible y accionable.
 
 ## Estado actual del proyecto
 
-> Última actualización: Fase 1 en progreso — Bloques 1 y 2 parcialmente completos.
-> Tag git: `v0.1-foundation`
+> Última actualización: Fase 1 en progreso — Bloques 1 y 2 completos.
+> Tag git: `v0.2-bloque1-completo`
 
 ```
-[x] Fase 0 — Infraestructura base       ← COMPLETADA
+[x] Fase 0 — Infraestructura base
 [~] Fase 1 — Frontend base              ← EN PROGRESO
 [ ] Fase 2 — Backend FastAPI
 [ ] Fase 3 — Consumo de API
@@ -37,55 +37,62 @@ legislativa en información navegable, entendible y accionable.
 ```
 frontend/src/
   types/
-    index.ts              ✅ Todos los tipos TypeScript
+    index.ts                  ✅ Todos los tipos TypeScript
+
+  data/mock/
+    temas.ts                  ✅ 10 temas con TEMAS_BY_ID y TEMAS_BY_SLUG
+    diputados.ts              ✅
+    proyectos.ts              ✅
+    comunicados.ts            ✅
+    comisiones.ts             ✅
+
+  lib/
+    utils.ts                  ✅ cn(), formatearFecha(), formatearMoneda()
 
   components/
     ui/
-      badge.tsx           ✅ shadcn base
-      button.tsx          ✅ shadcn base
-      card.tsx            ✅ shadcn base
-      dialog.tsx          ✅ shadcn base
-      separator.tsx       ✅ shadcn base
-      skeleton.tsx        ✅ shadcn base
-      table.tsx           ✅ shadcn base
-      BadgeEstado.tsx     ✅ estados legislativos
-      BadgePrioridad.tsx  ✅ urgente/en_debate/actualizado/seguido
-      EmptyState.tsx      ✅ vacío y error
-      SkeletonCard.tsx    ✅ loading
-      TablaVotos.tsx      ✅ votos con resumen
+      badge.tsx               ✅ shadcn base
+      button.tsx              ✅ shadcn base
+      card.tsx                ✅ shadcn base
+      dialog.tsx              ✅ shadcn base
+      separator.tsx           ✅ shadcn base
+      skeleton.tsx            ✅ shadcn base
+      table.tsx               ✅ shadcn base
+      BadgeEstado.tsx         ✅ estados legislativos
+      BadgePrioridad.tsx      ✅ urgente/en_debate/actualizado/seguido
+      EmptyState.tsx          ✅ vacío y error
+      SkeletonCard.tsx        ✅ loading
+      TablaVotos.tsx          ✅ votos con resumen
       TimelineLegislativa.tsx ✅ historial de cambios
 
-  ← PENDIENTE ─────────────────────────────────────
-  data/mock/            ❌ temas, diputados, proyectos,
-                           comunicados, comisiones
-  lib/
-    utils.ts            ❌ cn(), formatearFecha(), formatearMoneda()
+  ← PENDIENTE ────────────────────────────────────
   components/layout/
-    Navbar.tsx          ❌
-  features/             ❌ proyectos, diputados, comisiones, feed
+    Navbar.tsx                ❌  ← SIGUIENTE
   app/
-    page.tsx            ⚠️  placeholder — construir en Fase 1
-    proyectos/          ❌
-    diputados/          ❌
-    comisiones/         ❌
+    layout.tsx                ⚠️  actualizar: título, Navbar, metadata
+    page.tsx                  ⚠️  placeholder — construir en Fase 1
+    proyectos/                ❌
+    diputados/                ❌
+    comisiones/               ❌
+  features/                   ❌ proyectos, diputados, comisiones, feed
 ```
 
 ---
 
 ## Hoja de ruta — Fase 1 (estado actual)
 
-### Bloque 1 — Fundamentos
+### Bloque 1 — Fundamentos ✅
 ```
 [x] /src/types/index.ts
-[ ] /src/data/mock/temas.ts        ← SIGUIENTE
-[ ] /src/data/mock/diputados.ts
-[ ] /src/data/mock/proyectos.ts
-[ ] /src/data/mock/comunicados.ts
-[ ] /src/data/mock/comisiones.ts
-[ ] /src/lib/utils.ts
+[x] /src/data/mock/temas.ts
+[x] /src/data/mock/diputados.ts
+[x] /src/data/mock/proyectos.ts
+[x] /src/data/mock/comunicados.ts
+[x] /src/data/mock/comisiones.ts
+[x] /src/lib/utils.ts
 ```
 
-### Bloque 2 — Componentes UI base
+### Bloque 2 — Componentes UI base ✅
 ```
 [x] BadgeEstado.tsx
 [x] BadgePrioridad.tsx
@@ -95,13 +102,13 @@ frontend/src/
 [x] TimelineLegislativa.tsx
 ```
 
-### Bloque 3 — Layout
+### Bloque 3 — Layout ✅
 ```
-[ ] /src/components/layout/Navbar.tsx
-[ ] /src/app/layout.tsx              (actualizar: título, Navbar, metadata)
+[x] /src/components/layout/Navbar.tsx
+[x] /src/app/layout.tsx   (título "GOBi", Navbar, metadata)
 ```
 
-### Bloque 4 — Features y páginas
+### Bloque 4 — Features y páginas ← SIGUIENTE
 ```
 [ ] /src/features/proyectos/ProyectoCard.tsx
 [ ] /src/features/proyectos/FiltrosProyecto.tsx
@@ -119,7 +126,7 @@ frontend/src/
 [ ] Listado /proyectos con filtros en URL (estado, tema, búsqueda)
 [ ] Detalle /proyectos/[id] con timeline y tabla de votos
 [ ] Listado /diputados con card básica
-[ ] Navbar con links a todas las secciones
+[x] Navbar con links a todas las secciones
 [ ] EmptyState visible cuando no hay resultados
 [ ] npm run build sin errores
 ```
@@ -151,7 +158,7 @@ Tarea: [describe exactamente qué construyes]
 **Al terminar cada sesión:**
 - Marca los checkboxes completados
 - Haz commit con mensaje descriptivo
-- Pon tag en hitos importantes (ej: v0.2-fase1-completa)
+- Pon tag en hitos importantes (ej: v0.3-fase1-completa)
 
 ---
 
