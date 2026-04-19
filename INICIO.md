@@ -16,13 +16,13 @@ legislativa en información navegable, entendible y accionable.
 
 ## Estado actual del proyecto
 
-> Última actualización: Fase 1 en progreso — Bloques 1 y 2 completos.
-> Tag git: `v0.2-bloque1-completo`
+> Última actualización: Fase 1 completa.
+> Tag git: `v0.4-fase1-completa`
 
 ```
 [x] Fase 0 — Infraestructura base
-[~] Fase 1 — Frontend base              ← EN PROGRESO
-[ ] Fase 2 — Backend FastAPI
+[x] Fase 1 — Frontend base              ← COMPLETADA
+[ ] Fase 2 — Backend FastAPI            ← SIGUIENTE
 [ ] Fase 3 — Consumo de API
 [ ] Fase 4 — Diseño UX
 [ ] Fase 5 — Auth y roles
@@ -40,7 +40,7 @@ frontend/src/
     index.ts                  ✅ Todos los tipos TypeScript
 
   data/mock/
-    temas.ts                  ✅ 10 temas con TEMAS_BY_ID y TEMAS_BY_SLUG
+    temas.ts                  ✅
     diputados.ts              ✅
     proyectos.ts              ✅
     comunicados.ts            ✅
@@ -64,71 +64,75 @@ frontend/src/
       SkeletonCard.tsx        ✅ loading
       TablaVotos.tsx          ✅ votos con resumen
       TimelineLegislativa.tsx ✅ historial de cambios
+    layout/
+      Navbar.tsx              ✅ con ruta activa
 
-  ← PENDIENTE ────────────────────────────────────
-  components/layout/
-    Navbar.tsx                ❌  ← SIGUIENTE
+  features/
+    proyectos/
+      ProyectoCard.tsx        ✅
+      FiltrosProyecto.tsx     ✅ filtros en URL con Suspense
+
   app/
-    layout.tsx                ⚠️  actualizar: título, Navbar, metadata
-    page.tsx                  ⚠️  placeholder — construir en Fase 1
-    proyectos/                ❌
-    diputados/                ❌
-    comisiones/               ❌
-  features/                   ❌ proyectos, diputados, comisiones, feed
+    layout.tsx                ✅ título GOBi, Navbar, metadata
+    page.tsx                  ✅ feed legislativo con BadgePrioridad
+    proyectos/
+      page.tsx                ✅ listado con filtros
+      [id]/page.tsx           ✅ detalle con timeline y votos
+    diputados/
+      page.tsx                ✅ listado básico
 ```
 
 ---
 
-## Hoja de ruta — Fase 1 (estado actual)
+## Fase 2 — Backend FastAPI
 
-### Bloque 1 — Fundamentos ✅
-```
-[x] /src/types/index.ts
-[x] /src/data/mock/temas.ts
-[x] /src/data/mock/diputados.ts
-[x] /src/data/mock/proyectos.ts
-[x] /src/data/mock/comunicados.ts
-[x] /src/data/mock/comisiones.ts
-[x] /src/lib/utils.ts
-```
+> Referencia completa: `/docs/guia/GOBi_02_fase-backend-fastapi.md`
 
-### Bloque 2 — Componentes UI base ✅
+### Lo que se construye
 ```
-[x] BadgeEstado.tsx
-[x] BadgePrioridad.tsx
-[x] EmptyState.tsx
-[x] SkeletonCard.tsx
-[x] TablaVotos.tsx
-[x] TimelineLegislativa.tsx
-```
-
-### Bloque 3 — Layout ✅
-```
-[x] /src/components/layout/Navbar.tsx
-[x] /src/app/layout.tsx   (título "GOBi", Navbar, metadata)
-```
-
-### Bloque 4 — Features y páginas ✅
-```
-[x] /src/features/proyectos/ProyectoCard.tsx
-[x] /src/features/proyectos/FiltrosProyecto.tsx
-[x] /src/app/proyectos/page.tsx
-[x] /src/app/proyectos/[id]/page.tsx
-[x] /src/app/diputados/page.tsx
-[x] /src/app/page.tsx                (home: feed con BadgePrioridad)
+gobi-backend/
+  app/
+    main.py               ← FastAPI app + CORS + routers
+    database.py           ← engine, SessionLocal, Base, get_db()
+    models/
+      proyecto.py         ← ProyectoLey, CambioEstado, Voto, Documento, Tema
+      diputado.py         ← Diputado, Partido
+      comision.py         ← Comision
+      bitacora.py         ← EntradaBitacora
+    schemas/
+      proyecto.py         ← ProyectoResumenOut, ProyectoDetalleOut, etc.
+      common.py           ← PaginatedResponse[T]
+    routers/
+      proyectos.py
+      diputados.py
+      comisiones.py
+    services/
+      bitacora.py
+    core/
+      config.py           ← Settings (pydantic-settings)
+      auth.py             ← get_current_user(), require_admin()
 ```
 
-### Checklist de cierre de Fase 1
+### Endpoints mínimos para Fase 3
 ```
-[ ] Tipos definidos y sin errores TS
-[ ] Mock data completo (proyectos con historial y votos)
-[x] Feed home con jerarquía urgente/en_debate/actualizado
-[x] Listado /proyectos con filtros en URL (estado, tema, búsqueda)
-[x] Detalle /proyectos/[id] con timeline y tabla de votos
-[x] Listado /diputados con card básica
-[x] Navbar con links a todas las secciones
-[x] EmptyState visible cuando no hay resultados
-[ ] npm run build sin errores
+GET  /proyectos              ← listado paginado con filtros
+GET  /proyectos/{id}         ← detalle completo
+GET  /diputados              ← listado
+GET  /diputados/{id}         ← perfil
+GET  /comisiones             ← listado
+GET  /comisiones/{id}        ← detalle con miembros
+GET  /comunicados            ← feed
+```
+
+### Checklist de cierre de Fase 2
+```
+[ ] Proyecto Python creado con FastAPI + uvicorn
+[ ] PostgreSQL conectado (local o Railway)
+[ ] Modelos SQLAlchemy definidos y migrados con Alembic
+[ ] Endpoints GET funcionando con datos reales
+[ ] CORS configurado para localhost:3000
+[ ] Schemas Pydantic para todos los endpoints
+[ ] npm run build sin errores (frontend no se toca)
 ```
 
 ---
@@ -136,21 +140,21 @@ frontend/src/
 ## Reglas que el agente nunca debe romper
 
 ```
-❌ No conectar APIs en Fase 1 — solo mock data
-❌ No useState para filtros — siempre query params en URL
-❌ No spinner genérico — siempre SkeletonCard
-❌ No Badge de estado ad hoc — siempre BadgeEstado
-❌ No componentes de +150 líneas — dividir
-❌ No saltarse el orden de bloques
+❌ No modificar el frontend en Fase 2 — solo backend
+❌ No auth casera — usar Clerk (se integra en Fase 5)
+❌ No endpoints POST/PATCH aún — solo GET por ahora
+❌ No saltarse migraciones Alembic — nunca editar DB a mano
+❌ Siempre schemas Pydantic — nunca devolver modelos SQLAlchemy directos
+❌ Siempre PaginatedResponse[T] para listados
 ```
 
 ---
 
 ## Cómo usar este archivo
 
-**Al iniciar una sesión:**
+**Al iniciar una sesión de Fase 2:**
 ```
-@INICIO.md @CREAR_COMPONENTE.md
+@INICIO.md @FASTAPI.md
 
 Tarea: [describe exactamente qué construyes]
 ```
@@ -158,7 +162,7 @@ Tarea: [describe exactamente qué construyes]
 **Al terminar cada sesión:**
 - Marca los checkboxes completados
 - Haz commit con mensaje descriptivo
-- Pon tag en hitos importantes (ej: v0.3-fase1-completa)
+- Pon tag en hitos (ej: v0.5-backend-base)
 
 ---
 
@@ -167,13 +171,13 @@ Tarea: [describe exactamente qué construyes]
 ```
 SKILLS.md                        ← referencia maestra del stack
 stack/REACT_QUERY.md
-stack/FASTAPI.md
+stack/FASTAPI.md                 ← usar en Fase 2
 stack/CLERK.md
-stack/SQLALCHEMY.md
+stack/SQLALCHEMY.md              ← usar en Fase 2
 stack/TAILWIND_SHADCN.md
-tareas/CREAR_ENDPOINT.md
+tareas/CREAR_ENDPOINT.md         ← usar en Fase 2
 tareas/CREAR_COMPONENTE.md
-tareas/CREAR_MIGRACION.md
+tareas/CREAR_MIGRACION.md        ← usar en Fase 2
 tareas/AGREGAR_FILTRO.md
 tareas/AGREGAR_MODULO.md
 ```

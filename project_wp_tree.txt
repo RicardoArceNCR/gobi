@@ -1,0 +1,178 @@
+.
+├── CLAUDE.md
+├── INICIO.md
+├── README.md
+├── docs
+│   ├── SKILLS.md
+│   ├── guia
+│   │   ├── GOBi_00_vision-y-arquitectura.md
+│   │   ├── GOBi_01_fase-frontend-base.md
+│   │   ├── GOBi_02_fase-backend-fastapi.md
+│   │   ├── GOBi_03_fase-consumo-api.md
+│   │   ├── GOBi_04_fase-diseno-ux.md
+│   │   ├── GOBi_05_fase-auth-roles.md
+│   │   ├── GOBi_06_fase-admin.md
+│   │   └── GOBi_07_fase-ai-y-escala.md
+│   └── skills
+│       ├── SKILLS.md
+│       ├── stack
+│       │   ├── CLERK.md
+│       │   ├── FASTAPI.md
+│       │   ├── REACT_QUERY.md
+│       │   ├── SQLALCHEMY.md
+│       │   └── TAILWIND_SHADCN.md
+│       ├── stack.zip
+│       ├── tareas
+│       │   ├── AGREGAR_FILTRO.md
+│       │   ├── AGREGAR_MODULO.md
+│       │   ├── CREAR_COMPONENTE.md
+│       │   ├── CREAR_ENDPOINT.md
+│       │   └── CREAR_MIGRACION.md
+│       └── tareas.zip
+├── frontend
+│   ├── AGENTS.md
+│   ├── README.md
+│   ├── components.json
+│   ├── eslint.config.mjs
+│   ├── next-env.d.ts
+│   ├── next.config.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.mjs
+│   ├── public
+│   │   ├── file.svg
+│   │   ├── globe.svg
+│   │   ├── next.svg
+│   │   ├── vercel.svg
+│   │   └── window.svg
+│   ├── src
+│   │   ├── app
+│   │   │   ├── diputados
+│   │   │   │   └── page.tsx
+│   │   │   ├── favicon.ico
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── proyectos
+│   │   │       ├── [id]
+│   │   │       └── page.tsx
+│   │   ├── components
+│   │   │   ├── layout
+│   │   │   │   └── Navbar.tsx
+│   │   │   └── ui
+│   │   │       ├── BadgeEstado.tsx
+│   │   │       ├── BadgePrioridad.tsx
+│   │   │       ├── EmptyState.tsx
+│   │   │       ├── SkeletonCard.tsx
+│   │   │       ├── TablaVotos.tsx
+│   │   │       ├── TimelineLegislativa.tsx
+│   │   │       ├── badge.tsx
+│   │   │       ├── button.tsx
+│   │   │       ├── card.tsx
+│   │   │       ├── dialog.tsx
+│   │   │       ├── separator.tsx
+│   │   │       ├── skeleton.tsx
+│   │   │       └── table.tsx
+│   │   ├── data
+│   │   │   └── mock
+│   │   │       ├── comisiones.ts
+│   │   │       ├── comunicados.ts
+│   │   │       ├── diputados.ts
+│   │   │       ├── proyectos.ts
+│   │   │       └── temas.ts
+│   │   ├── features
+│   │   │   └── proyectos
+│   │   │       ├── FiltrosProyecto.tsx
+│   │   │       └── ProyectoCard.tsx
+│   │   ├── lib
+│   │   │   └── utils.ts
+│   │   └── types
+│   │       └── index.ts
+│   └── tsconfig.json
+├── gobi-backend
+│   ├── alembic
+│   │   ├── README
+│   │   ├── env.py
+│   │   ├── script.py.mako
+│   │   └── versions
+│   ├── alembic.ini
+│   ├── app
+│   │   ├── __init__.py
+│   │   ├── core
+│   │   │   ├── auth.py
+│   │   │   ├── config.py
+│   │   │   └── deps.py
+│   │   ├── database.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py
+│   │   │   ├── bitacora.py
+│   │   │   ├── comision.py
+│   │   │   ├── diputado.py
+│   │   │   └── proyecto.py
+│   │   ├── routers
+│   │   │   ├── __init__.py
+│   │   │   ├── diputados.py
+│   │   │   └── proyectos.py
+│   │   ├── schemas
+│   │   │   ├── __init__.py
+│   │   │   ├── comision.py
+│   │   │   ├── common.py
+│   │   │   ├── diputado.py
+│   │   │   └── proyecto.py
+│   │   └── services
+│   │       └── bitacora.py
+│   ├── requirements.txt
+│   └── venv
+│       ├── bin
+│       │   ├── Activate.ps1
+│       │   ├── activate
+│       │   ├── activate.csh
+│       │   ├── activate.fish
+│       │   ├── alembic
+│       │   ├── dotenv
+│       │   ├── email_validator
+│       │   ├── fastapi
+│       │   ├── httpx
+│       │   ├── mako-render
+│       │   ├── pip
+│       │   ├── pip3
+│       │   ├── pip3.13
+│       │   ├── pyrsa-decrypt
+│       │   ├── pyrsa-encrypt
+│       │   ├── pyrsa-keygen
+│       │   ├── pyrsa-priv2pub
+│       │   ├── pyrsa-sign
+│       │   ├── pyrsa-verify
+│       │   ├── python -> python3.13
+│       │   ├── python3 -> python3.13
+│       │   ├── python3.13 -> /Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13
+│       │   ├── uvicorn
+│       │   ├── watchfiles
+│       │   └── websockets
+│       ├── include
+│       │   └── python3.13
+│       ├── lib
+│       │   └── python3.13
+│       │       └── site-packages
+│       └── pyvenv.cfg
+├── project_wp_tree.txt
+└── public
+    └── imgs
+        ├── Comunicados-1.png
+        ├── Comunicados-2.png
+        ├── Comunicados-3.png
+        ├── Comunicados.png
+        ├── Filters.png
+        ├── Perfil diputado.png
+        ├── asamblea-comunicado-2.png
+        ├── categorias.png
+        ├── comision de juventud, ninez y adolescencia.png
+        ├── comisiones.png
+        ├── fracciones.png
+        ├── gobierno-integrantes.png
+        ├── login.png
+        └── pop-up.png
+
+40 directories, 136 files
