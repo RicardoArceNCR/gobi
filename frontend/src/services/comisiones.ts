@@ -1,26 +1,23 @@
+// frontend/src/services/comisiones.ts
 import { api } from "./api";
-import { Comision } from "@/types";
+import { Comision, FiltrosComision } from "@/types/index";
 
-export interface FiltrosComision {
-  busqueda?: string;
-  page?: number;
-  pageSize?: number;
-}
+export const getComisiones = async (params?: FiltrosComision): Promise<Comision[]> => {
+  const cleanParams: Record<string, string | number> = {};
+  
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        cleanParams[key] = value;
+      }
+    });
+  }
 
-export interface PaginatedComisiones {
-  items: Comision[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export async function getComisiones(filtros: FiltrosComision = {}): Promise<PaginatedComisiones> {
-  const { data } = await api.get("/comisiones", { params: filtros });
+  const { data } = await api.get<Comision[]>("/comisiones", { params: cleanParams });
   return data;
-}
+};
 
-export async function getComision(id: string): Promise<Comision> {
-  const { data } = await api.get(`/comisiones/${id}`);
+export const getComision = async (id: string): Promise<Comision> => {
+  const { data } = await api.get<Comision>(`/comisiones/${id}`);
   return data;
-}
+};

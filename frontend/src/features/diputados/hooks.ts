@@ -1,24 +1,26 @@
+// frontend/src/features/diputados/hooks.ts
 import { useQuery } from "@tanstack/react-query";
-import { getDiputados, getDiputado, FiltrosDiputado } from "@/services/diputados";
+import { getDiputados, getDiputado } from "@/services/diputados";
+import type { FiltrosDiputados } from "@/types/index";
 
 export const diputadosKeys = {
   all: ["diputados"] as const,
-  list: (f: FiltrosDiputado) => ["diputados", "list", f] as const,
+  list: (params?: FiltrosDiputados) => ["diputados", "list", params] as const,
   detail: (id: string) => ["diputados", "detail", id] as const,
 };
 
-export function useDiputados(filtros: FiltrosDiputado = {}) {
+export const useDiputados = (params?: FiltrosDiputados) => {
   return useQuery({
-    queryKey: diputadosKeys.list(filtros),
-    queryFn: () => getDiputados(filtros),
-    placeholderData: (prev) => prev,
+    queryKey: diputadosKeys.list(params),
+    queryFn: () => getDiputados(params),
   });
-}
+};
 
-export function useDiputado(id: string) {
+
+export const useDiputado = (id: string) => {
   return useQuery({
     queryKey: diputadosKeys.detail(id),
     queryFn: () => getDiputado(id),
     enabled: !!id,
   });
-}
+};

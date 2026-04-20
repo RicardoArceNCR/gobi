@@ -1,27 +1,22 @@
 import { api } from "./api";
-import { Diputado } from "@/types";
+import { Diputado, FiltrosDiputados } from "@/types/index";
 
-export interface FiltrosDiputado {
-  partido?: string;
-  busqueda?: string;
-  page?: number;
-  pageSize?: number;
-}
+export const getDiputados = async (params?: FiltrosDiputados): Promise<Diputado[]> => {
+  const cleanParams: Record<string, string | number> = {};
+  
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        cleanParams[key] = value;
+      }
+    });
+  }
 
-export interface PaginatedDiputados {
-  items: Diputado[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export async function getDiputados(filtros: FiltrosDiputado = {}): Promise<PaginatedDiputados> {
-  const { data } = await api.get("/diputados", { params: filtros });
+  const { data } = await api.get<Diputado[]>("/diputados", { params: cleanParams });
   return data;
-}
+};
 
-export async function getDiputado(id: string): Promise<Diputado> {
-  const { data } = await api.get(`/diputados/${id}`);
+export const getDiputado = async (id: string): Promise<Diputado> => {
+  const { data } = await api.get<Diputado>(`/diputados/${id}`);
   return data;
-}
+};

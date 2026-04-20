@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getComisiones, getComision, FiltrosComision } from "@/services/comisiones";
+import { getComisiones, getComision } from "@/services/comisiones";
+import type { FiltrosComision } from "@/types/index";
 
 export const comisionesKeys = {
   all: ["comisiones"] as const,

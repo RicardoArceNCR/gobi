@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from uuid import UUID
 from typing import Optional
 
@@ -26,7 +26,14 @@ def listar_proyectos(
     page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    q = db.query(ProyectoLey)
+    q = (
+        db.query(ProyectoLey)
+        .options(
+            joinedload(ProyectoLey.comision),
+            joinedload(ProyectoLey.proponente),
+            selectinload(ProyectoLey.temas)
+        )
+    )
 
     if estado:
         q = q.filter(ProyectoLey.estado == estado)
@@ -55,7 +62,19 @@ def listar_proyectos(
 
 @router.get("/{proyecto_id}", response_model=ProyectoDetalleOut)
 def obtener_proyecto(proyecto_id: UUID, db: Session = Depends(get_db)):
-    proyecto = db.query(ProyectoLey).filter(ProyectoLey.id == proyecto_id).first()
+    proyecto = (
+        db.query(ProyectoLey)
+        .options(
+            joinedload(ProyectoLey.comision),
+            joinedload(ProyectoLey.proponente),
+            selectinload(ProyectoLey.temas),
+            selectinload(ProyectoLey.votos),
+            selectinload(ProyectoLey.documentos),
+            selectinload(ProyectoLey.historial)
+        )
+        .filter(ProyectoLey.id == proyecto_id)
+        .first()
+    )
     if not proyecto:
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
     return proyecto

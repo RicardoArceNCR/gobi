@@ -1,14 +1,20 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from typing import Optional, TYPE_CHECKING
 from uuid import UUID
-from app.schemas.proyecto import DiputadoResumenOut, ProyectoResumenOut
 
-class ComisionResumenOut(BaseModel):
+if TYPE_CHECKING:
+    from app.schemas.proyecto import DiputadoResumenOut, ProyectoResumenOut
+
+class ComisionOut(BaseModel):
     id: UUID
     nombre: str
     descripcion: Optional[str] = None
-    model_config = {"from_attributes": True}
+    
+    model_config = ConfigDict(from_attributes=True)
 
-class ComisionDetalleOut(ComisionResumenOut):
-    miembros: list[DiputadoResumenOut] = []
-    proyectos: list[ProyectoResumenOut] = []
+class ComisionResumenOut(ComisionOut):
+    pass
+
+class ComisionDetalleOut(ComisionOut):
+    miembros: list["DiputadoResumenOut"] = []
+    proyectos: list["ProyectoResumenOut"] = []

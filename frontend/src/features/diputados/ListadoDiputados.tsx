@@ -26,7 +26,7 @@ export function ListadoDiputados() {
     );
   }
 
-  if (!data?.items?.length) {
+  if (!data?.length) {
     return (
       <EmptyState
         icono="📭"
@@ -38,7 +38,7 @@ export function ListadoDiputados() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {data.items.map((diputado) => (
+      {data.map((diputado) => (
         <div key={diputado.id} className="border rounded-xl p-5 bg-white hover:shadow-md transition flex flex-col items-center text-center">
           {/* Foto Placeholder */}
           <div 

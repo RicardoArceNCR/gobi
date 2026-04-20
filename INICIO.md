@@ -16,15 +16,15 @@ legislativa en información navegable, entendible y accionable.
 
 ## Estado actual del proyecto
 
-> Última actualización: Fase 2 completa.
-> Tag git: `v0.5-backend-base`
+> Última actualización: Fase 3 completa.
+> Tags git: `v0.5-backend-base` (Fase 2 completa)
 
 ```
 [x] Fase 0 — Infraestructura base
 [x] Fase 1 — Frontend base
-[x] Fase 2 — Backend FastAPI
-[x] Fase 3 — Consumo de API             ← COMPLETADA
-[ ] Fase 4 — Diseño UX                  ← SIGUIENTE
+[x] Fase 2 — Backend FastAPI         ← tag: v0.5-backend-base
+[x] Fase 3 — Consumo de API          ← COMPLETADA
+[ ] Fase 4 — Diseño UX               ← SIGUIENTE
 [ ] Fase 5 — Auth y roles
 [ ] Fase 6 — Panel admin
 [ ] Fase 7 — AI y escala
@@ -34,152 +34,68 @@ legislativa en información navegable, entendible y accionable.
 
 ## Lo que existe hoy
 
-### Frontend (Next.js)
-```
-src/types/index.ts                ✅ tipos TypeScript
-src/data/mock/                    ✅ temas, diputados, proyectos, comunicados, comisiones
-src/lib/utils.ts                  ✅ cn(), formatearFecha(), formatearMoneda()
-src/components/ui/                ✅ BadgeEstado, BadgePrioridad, EmptyState,
-                                     SkeletonCard, TablaVotos, TimelineLegislativa
-src/components/layout/Navbar.tsx  ✅
-src/features/proyectos/           ✅ ProyectoCard, FiltrosProyecto
-src/app/                          ✅ /, /proyectos, /proyectos/[id], /diputados
-```
-
-### Backend (FastAPI)
-```
-gobi-backend/
-  app/main.py                     ✅ FastAPI + CORS + routers
-  app/core/config.py              ✅ Settings con pydantic-settings
-  app/core/auth.py                ✅ get_current_user(), require_admin()
-  app/database.py                 ✅ engine, SessionLocal, Base, get_db()
-  app/models/                     ✅ proyecto, diputado, comision, bitacora
-  app/routers/                    ✅ proyectos, diputados, comisiones
-  app/schemas/                    ✅ proyecto, diputado, comision, common
-  app/services/bitacora.py        ✅
-  alembic/                        ✅ migración inicial aplicada
-  .env                            ✅ DATABASE_URL + placeholders Clerk
-
-DB: gobi_db (PostgreSQL local)
-Tablas: bitacora, cambios_estado, comisiones, diputado_comision,
-        diputados, documentos, partidos, proyecto_tema,
-        proyectos_ley, temas, votos (12 tablas)
-
-Endpoints disponibles en http://localhost:8000/docs:
-  GET  /proyectos
-  GET  /proyectos/{id}
-  GET  /diputados
-  GET  /diputados/{id}
-  GET  /comisiones
-  GET  /comisiones/{id}
-```
-
----
-
-## Fase 3 — Consumo de API desde el frontend
-
-> Referencia completa: `/docs/guia/GOBi_03_fase-consumo-api.md`
-
-### Lo que se construye
 ```
 frontend/src/
+  types/
+    index.ts                  ✅ Todos los tipos TypeScript
+  data/mock/
+    temas.ts                  ✅ (referencia estructural, no se usa en producción)
+    diputados.ts              ✅
+    proyectos.ts              ✅
+    comunicados.ts            ✅
+    comisiones.ts             ✅
+  lib/
+    utils.ts                  ✅ cn(), formatearFecha(), formatearMoneda()
+  providers/
+    QueryProvider.tsx         ✅ React Query v5 configurado
   services/
-    api.ts              ← instancia Axios + configurarToken()
-    proyectos.ts        ← llamadas a /proyectos
-    diputados.ts        ← llamadas a /diputados
-    comisiones.ts       ← llamadas a /comisiones
-
-  hooks/
-    useProyectos.ts     ← useQuery wrapping services/proyectos
-    useDiputados.ts
-    useComisiones.ts
-
-  features/proyectos/
-    hooks.ts            ← useProyectos, useProyecto, filtros
-```
-
-### Cambios en páginas
-```
-Reemplazar mock data → useQuery hooks en:
-  /app/page.tsx                   (feed)
-  /app/proyectos/page.tsx         (listado)
-  /app/proyectos/[id]/page.tsx    (detalle)
-  /app/diputados/page.tsx         (listado)
-```
-
-### Checklist de cierre de Fase 3
-```
-[x] services/api.ts con instancia Axios apuntando a localhost:8000
-[x] services/proyectos.ts, diputados.ts, comisiones.ts
-[x] hooks useQuery para cada entidad
-[x] Páginas usando hooks (no mock data)
-[x] SkeletonCard visible durante carga
-[x] EmptyState visible si no hay datos
-[x] Filtros de URL funcionando contra API real
-[x] npm run build sin errores
-[x] Backend y frontend corriendo simultáneamente sin errores CORS
-```
-
----
-
-## Cómo levantar el entorno local
-
-```bash
-# Terminal 1 — Backend
-cd /Users/ricardo/gobi/gobi-backend
-source venv/bin/activate
-uvicorn app.main:app --reload
-# → http://localhost:8000/docs
-
-# Terminal 2 — Frontend
-cd /Users/ricardo/gobi/frontend
-npm run dev
-# → http://localhost:3000
+    api.ts                    ✅ instancia Axios + configurarToken() (para Clerk en Fase 5)
+    proyectos.ts              ✅ getProyectos(), getProyecto(), cambiarEstado()
+    diputados.ts              ✅ getDiputados(), getDiputado()
+    comisiones.ts             ✅ getComisiones(), getComision()
+  components/
+    ui/
+      badge.tsx               ✅ shadcn base
+      button.tsx              ✅ shadcn base
+      card.tsx                ✅ shadcn base
+      dialog.tsx              ✅ shadcn base
+      separator.tsx           ✅ shadcn base
+      skeleton.tsx            ✅ shadcn base
+      table.tsx               ✅ shadcn base
+      BadgeEstado.tsx         ✅ estados legislativos
+      BadgePrioridad.tsx      ✅ urgente/en_debate/actualizado/seguido
+      EmptyState.tsx          ✅ vacío y error
+      SkeletonCard.tsx        ✅ loading
+      TablaVotos.tsx          ✅ votos con resumen
+      TimelineLegislativa.tsx ✅ historial de cambios
+    layout/
+      Navbar.tsx              ✅ con ruta activa
+  features/
+    proyectos/
+      ProyectoCard.tsx        ✅
+      FiltrosProyecto.tsx     ✅ filtros en URL con Suspense
+      ListadoProyectos.tsx    ✅ conectado a API con 3 estados
+      FeedLegislativo.tsx     ✅ feed home ordenado por prioridad
+      ProyectoDetalleView.tsx ✅ detalle con timeline y votos
+      hooks.ts                ✅ useProyectos(), useProyecto(), useCambiarEstado()
+    diputados/
+      ListadoDiputados.tsx    ✅ conectado a API
+      hooks.ts                ✅ useDiputados(), useDiputado()
+    comisiones/
+      hooks.ts                ✅ useComisiones(), useComision()
+  app/
+    layout.tsx                ✅ título GOBi, Navbar, QueryProvider, metadata
+    page.tsx                  ✅ feed legislativo con FeedLegislativo
+    proyectos/
+      page.tsx                ✅ listado con filtros conectado a API
+      [id]/page.tsx           ✅ detalle con ProyectoDetalleView
+    diputados/
+      page.tsx                ✅ usando ListadoDiputados (API) - 100% migrado
 ```
 
 ---
 
-## Reglas que el agente nunca debe romper
-
-```
-❌ No llamar API directo desde componente — siempre hook → service
-❌ No useState para filtros — siempre query params en URL
-❌ No spinner genérico — siempre SkeletonCard
-❌ No eliminar mock data aún — mantener como fallback hasta Fase 3 estable
-❌ Siempre los 3 estados: isLoading → isError → data
-❌ Query keys centralizados en cada hooks.ts
-```
-
----
-
-## Cómo usar este archivo
-
-**Al iniciar una sesión de Fase 3:**
-```
-@INICIO.md @REACT_QUERY.md
-
-Tarea: [describe exactamente qué construyes]
-```
-
-**Al terminar cada sesión:**
-- Marca los checkboxes completados
-- Haz commit con mensaje descriptivo
-- Tag en hitos (ej: v0.6-fase3-completa)
-
----
-
-## Skills disponibles en /docs/skills/
-
-```
-SKILLS.md                        ← referencia maestra del stack
-stack/REACT_QUERY.md             ← usar en Fase 3 ⭐
-stack/FASTAPI.md
-stack/CLERK.md
-stack/SQLALCHEMY.md
-stack/TAILWIND_SHADCN.md
-tareas/CREAR_ENDPOINT.md
-tareas/CREAR_COMPONENTE.md
-tareas/CREAR_MIGRACION.md
-tareas/AGREGAR_FILTRO.md
-tareas/AGREGAR_MODULO.md
-```
+## Siguiente Paso (Fase 4 - Diseño UX)
+- Crear el sistema de tokens de diseño global y consistencia visual.
+- Refinar componentes, el layout general, y asegurar responsiveness en todas las dimensiones de pantalla.
+- Añadir estados activos (hovers), interactividad, texturas ligeras al fondo y limpieza estética al nivel de los estándares altos del stack.

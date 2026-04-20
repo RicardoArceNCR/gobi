@@ -105,3 +105,13 @@ export interface Comision {
   miembros: Diputado[];
   proyectosActivos: number;
 }
+
+export interface FiltrosComision {
+  busqueda?: string;
+  tema?: string;
+}
+
+export interface FiltrosDiputados {
+  [key: string]: string | number | undefined;
+}
+

@@ -1,7 +1,8 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, computed_field, ConfigDict
 from typing import Optional
 from uuid import UUID
 from app.models.proyecto import EstadoProyecto
+from app.schemas.comision import ComisionOut
 
 class TemaOut(BaseModel):
     id: UUID
@@ -45,8 +46,8 @@ class DocumentoOut(BaseModel):
 
 class VotoOut(BaseModel):
     diputado_id: UUID
-    diputado_nombre: str   # viene del join con Diputado en la query
-    partido: str           # viene de diputado.partido.nombre (resuelto en el router)
+    diputado_nombre: str
+    partido: str
     valor: str
     model_config = {"from_attributes": True}
 
@@ -57,16 +58,26 @@ class ProyectoResumenOut(BaseModel):
     descripcion: str
     estado: EstadoProyecto
     fecha_presentacion: str
-    fecha_ultimo_cambio: str   # mapeado desde updated_at del modelo (TimestampMixin)
     proponente: DiputadoResumenOut
-    comision_nombre: Optional[str]
     temas: list[TemaOut]
-    model_config = {"from_attributes": True}
 
-    @field_validator("fecha_ultimo_cambio", mode="before")
-    def format_updated_at(cls, v):
-        # updated_at viene de TimestampMixin como datetime — convertir a string
-        return str(v)[:10] if v else ""
+    # campos relacionados para serialización
+    comision: Optional[ComisionOut] = None
+    updated_at: Optional[object] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @computed_field
+    @property
+    def fecha_ultimo_cambio(self) -> str:
+        return str(self.updated_at)[:10] if self.updated_at else ""
+
+    @computed_field
+    @property
+    def comision_nombre(self) -> Optional[str]:
+        if not self.comision:
+            return None
+        return getattr(self.comision, "nombre", None)
 
 class ProyectoDetalleOut(ProyectoResumenOut):
     historial: list[CambioEstadoOut]

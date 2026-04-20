@@ -1,35 +1,45 @@
+// frontend/src/services/proyectos.ts
 import { api } from "./api";
-import { ProyectoLey, EstadoProyecto } from "@/types";
+import { ProyectoLey, EstadoProyecto } from "@/types/index";
 
 export interface FiltrosProyecto {
-  estado?: EstadoProyecto | "todos" | "";
-  busqueda?: string;
+  estado?: EstadoProyecto | string;
   tema?: string;
-  partido?: string;
+  busqueda?: string;
   page?: number;
-  pageSize?: number;
 }
 
-export interface PaginatedProyectos {
+export interface PaginaProyectos {
   items: ProyectoLey[];
   total: number;
   page: number;
-  pageSize: number;
-  totalPages: number;
+  size: number;
+  pages: number;
 }
 
-export async function getProyectos(filtros: FiltrosProyecto = {}): Promise<PaginatedProyectos> {
-  // Limpiar parámetros vacíos para no enviarlos al backend
-  const params: any = { ...filtros };
-  if (params.estado === "todos" || params.estado === "") {
-    delete params.estado;
-  }
+export const getProyectos = async (filtros?: FiltrosProyecto): Promise<PaginaProyectos> => {
+  const params: Record<string, string | number> = {};
   
-  const { data } = await api.get("/proyectos", { params });
-  return data;
-}
+  if (filtros) {
+    Object.entries(filtros).forEach(([key, value]) => {
+      // Limpia params vacíos
+      if (value !== undefined && value !== null && value !== "") {
+        params[key] = value;
+      }
+    });
+  }
 
-export async function getProyecto(id: string): Promise<ProyectoLey> {
-  const { data } = await api.get(`/proyectos/${id}`);
+  const { data } = await api.get<PaginaProyectos>("/proyectos", { params });
   return data;
-}
+};
+
+export const getProyecto = async (id: string): Promise<ProyectoLey> => {
+  const { data } = await api.get<ProyectoLey>(`/proyectos/${id}`);
+  return data;
+};
+
+export const cambiarEstado = async (id: string, estado: string) => {
+  const { data } = await api.patch(`/proyectos/${id}/estado`, { estado });
+  return data;
+};
+

@@ -14,7 +14,7 @@ export function ListadoProyectos() {
 
   const { data, isLoading, isError } = useProyectos({
     busqueda,
-    estado: estado as any, // el service y hook limpian "todos"
+    estado: estado === "todos" ? undefined : estado,
     tema,
   });
 
