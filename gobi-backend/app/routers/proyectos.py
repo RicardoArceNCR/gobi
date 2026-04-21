@@ -4,7 +4,8 @@ from uuid import UUID
 from typing import Optional
 
 from app.database import get_db
-from app.models.proyecto import ProyectoLey, EstadoProyecto, CambioEstado
+from app.models.proyecto import ProyectoLey, EstadoProyecto, CambioEstado, Voto
+from app.models.diputado import Diputado
 from app.schemas.proyecto import (
     ProyectoResumenOut, ProyectoDetalleOut,
     ProyectoCreate, ProyectoUpdate, CambioEstadoCreate
@@ -15,6 +16,15 @@ from app.services.bitacora import registrar
 from datetime import datetime
 
 router = APIRouter(prefix="/proyectos", tags=["proyectos"])
+
+TRANSICIONES_VALIDAS = {
+    EstadoProyecto.presentado: [EstadoProyecto.en_comision, EstadoProyecto.archivado],
+    EstadoProyecto.en_comision: [EstadoProyecto.en_debate, EstadoProyecto.archivado],
+    EstadoProyecto.en_debate: [EstadoProyecto.votado, EstadoProyecto.archivado],
+    EstadoProyecto.votado: [EstadoProyecto.aprobado, EstadoProyecto.archivado],
+    EstadoProyecto.aprobado: [],
+    EstadoProyecto.archivado: [],
+}
 
 @router.get("", response_model=PaginatedResponse[ProyectoResumenOut])
 def listar_proyectos(
@@ -66,9 +76,11 @@ def obtener_proyecto(proyecto_id: UUID, db: Session = Depends(get_db)):
         db.query(ProyectoLey)
         .options(
             joinedload(ProyectoLey.comision),
-            joinedload(ProyectoLey.proponente),
+            joinedload(ProyectoLey.proponente).joinedload(Diputado.partido),
             selectinload(ProyectoLey.temas),
-            selectinload(ProyectoLey.votos),
+            selectinload(ProyectoLey.votos)
+                .joinedload(Voto.diputado)
+                .joinedload(Diputado.partido),
             selectinload(ProyectoLey.documentos),
             selectinload(ProyectoLey.historial)
         )
@@ -96,12 +108,20 @@ def crear_proyecto(
         proyecto.temas = temas
 
     db.add(proyecto)
+    db.flush()
+
+    registrar(
+        db,
+        "proyecto",
+        str(proyecto.id),
+        "creacion",
+        motivo="Creación inicial",
+        usuario_id=user["user_id"],
+        usuario_nombre=user.get("nombre", "Usuario"),
+    )
+
     db.commit()
     db.refresh(proyecto)
-
-    registrar(db, "proyecto", str(proyecto.id), "creacion",
-              motivo="Creación inicial", usuario_id=user["user_id"], usuario_nombre="Admin")
-
     return proyecto
 
 @router.patch("/{proyecto_id}", response_model=ProyectoDetalleOut)
@@ -116,12 +136,39 @@ def actualizar_proyecto(
         raise HTTPException(status_code=404, detail="Proyecto no encontrado")
 
     datos = body.model_dump(exclude_unset=True, exclude={"tema_ids"})
+
     for campo, valor in datos.items():
+        valor_anterior = getattr(proyecto, campo)
         setattr(proyecto, campo, valor)
+
+        registrar(
+            db,
+            "proyecto",
+            str(proyecto.id),
+            "edicion",
+            motivo="Edición de proyecto",
+            usuario_id=user["user_id"],
+            usuario_nombre=user.get("nombre", "Usuario"),
+            campo_modificado=campo,
+            valor_anterior=str(valor_anterior) if valor_anterior is not None else None,
+            valor_nuevo=str(valor) if valor is not None else None,
+        )
 
     if body.tema_ids is not None:
         from app.models.proyecto import Tema
         proyecto.temas = db.query(Tema).filter(Tema.id.in_(body.tema_ids)).all()
+
+        registrar(
+            db,
+            "proyecto",
+            str(proyecto.id),
+            "edicion",
+            motivo="Actualización de temas",
+            usuario_id=user["user_id"],
+            usuario_nombre=user.get("nombre", "Usuario"),
+            campo_modificado="tema_ids",
+            valor_nuevo=",".join(str(t) for t in body.tema_ids),
+        )
 
     db.commit()
     db.refresh(proyecto)
@@ -141,18 +188,44 @@ def cambiar_estado(
     if proyecto.estado == body.estado_nuevo:
         raise HTTPException(status_code=400, detail="El proyecto ya tiene ese estado")
 
+    if len(body.motivo.strip()) < 10:
+        raise HTTPException(status_code=400, detail="El motivo debe tener al menos 10 caracteres")
+
+    permitidos = TRANSICIONES_VALIDAS.get(proyecto.estado, [])
+    if body.estado_nuevo not in permitidos:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Transición inválida: {proyecto.estado.value} → {body.estado_nuevo.value}"
+        )
+
+    estado_anterior = proyecto.estado
+
     cambio = CambioEstado(
         proyecto_id=proyecto.id,
-        estado_anterior=proyecto.estado,
+        estado_anterior=estado_anterior,
         estado_nuevo=body.estado_nuevo,
         motivo=body.motivo,
         usuario_id=user["user_id"],
-        usuario_nombre=user.get("nombre", "Admin"),
+        usuario_nombre=user.get("nombre", "Usuario"),
         created_at=datetime.utcnow(),
     )
 
     proyecto.estado = body.estado_nuevo
     db.add(cambio)
+
+    registrar(
+        db,
+        "proyecto",
+        str(proyecto.id),
+        "cambio_estado",
+        motivo=body.motivo,
+        usuario_id=user["user_id"],
+        usuario_nombre=user.get("nombre", "Usuario"),
+        campo_modificado="estado",
+        valor_anterior=estado_anterior.value,
+        valor_nuevo=body.estado_nuevo.value,
+    )
+
     db.commit()
     db.refresh(proyecto)
     return proyecto

@@ -5,13 +5,6 @@ import { ProyectoCard } from "./ProyectoCard";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 
-const PRIORIDAD_PESO: Record<string, number> = {
-  urgente: 4,
-  en_debate: 3,
-  actualizado: 2,
-  seguido: 1,
-};
-
 export function FeedLegislativo() {
   const { data, isLoading, isError } = useProyectos({});
 
@@ -26,24 +19,30 @@ export function FeedLegislativo() {
   }
 
   if (isError) {
-    return <EmptyState icono="⚠️" titulo="Error al cargar el feed legislativo" />;
+    return (
+      <EmptyState
+        icono="⚠️"
+        titulo="Error al cargar el feed legislativo"
+        descripcion="Hubo un problema al obtener la actividad reciente."
+      />
+    );
   }
 
   if (!data?.items?.length) {
-    return <EmptyState icono="🔍" titulo="No hay actividad reciente" />;
+    return (
+      <EmptyState
+        icono="🔍"
+        titulo="No hay actividad reciente"
+        descripcion="Todavía no hay proyectos para mostrar en el feed."
+      />
+    );
   }
 
-  // Ordenamos usando el campo prioridad que viene tipado
-  const feed = [...data.items].sort((a, b) => {
-    const pesoA = a.prioridad ? PRIORIDAD_PESO[a.prioridad] || 0 : 0;
-    const pesoB = b.prioridad ? PRIORIDAD_PESO[b.prioridad] || 0 : 0;
-
-    if (pesoA !== pesoB) {
-      return pesoB - pesoA;
-    }
-
-    return new Date(b.fechaUltimoCambio).getTime() - new Date(a.fechaUltimoCambio).getTime();
-  });
+  const feed = [...data.items].sort(
+    (a, b) =>
+      new Date(b.fechaUltimoCambio || b.fechaPresentacion).getTime() -
+      new Date(a.fechaUltimoCambio || a.fechaPresentacion).getTime()
+  );
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, Table
+from sqlalchemy import Column, String, Integer, ForeignKey, Table, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
@@ -12,6 +12,7 @@ diputado_comision = Table(
     Column("diputado_id", UUID(as_uuid=True), ForeignKey("diputados.id"), primary_key=True),
     Column("comision_id", UUID(as_uuid=True), ForeignKey("comisiones.id"), primary_key=True),
 )
+
 
 class Partido(Base):
     __tablename__ = "partidos"
@@ -33,7 +34,7 @@ class Diputado(Base, TimestampMixin):
     partido_id = Column(UUID(as_uuid=True), ForeignKey("partidos.id"), nullable=False)
     salario = Column(Integer, nullable=False, default=0)
     monto_gasolina = Column(Integer, nullable=False, default=0)
-    fecha_inicio = Column(String(10), nullable=False)
+    fecha_inicio = Column(Date, nullable=False)
 
     partido = relationship("Partido", back_populates="diputados")
     comisiones = relationship("Comision", secondary=diputado_comision, back_populates="miembros")

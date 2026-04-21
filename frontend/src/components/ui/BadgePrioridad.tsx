@@ -9,18 +9,28 @@ const config: Record<PrioridadFeed, { clase: string; dot: string; etiqueta: stri
   seguido:     { clase: "bg-gray-50 text-gray-600 border border-gray-200",    dot: "bg-gray-400",   etiqueta: "Seguido"     },
 };
 
+const fallback = {
+  clase: "bg-zinc-50 text-zinc-600 border border-zinc-200",
+  dot: "bg-zinc-400",
+  etiqueta: "Sin prioridad",
+};
+
 export function BadgePrioridad({
   prioridad,
   className,
 }: {
-  prioridad: PrioridadFeed;
+  prioridad?: string | null;
   className?: string;
 }) {
-  const { clase, dot, etiqueta } = config[prioridad];
+  const prioridadConfig =
+    prioridad && prioridad in config
+      ? config[prioridad as PrioridadFeed]
+      : fallback;
+
   return (
-    <span className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium", clase, className)}>
-      <span className={cn("w-1.5 h-1.5 rounded-full", dot)} />
-      {etiqueta}
+    <span className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium", prioridadConfig.clase, className)}>
+      <span className={cn("w-1.5 h-1.5 rounded-full", prioridadConfig.dot)} />
+      {prioridadConfig.etiqueta}
     </span>
   );
 }

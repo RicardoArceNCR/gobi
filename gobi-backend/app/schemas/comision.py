@@ -1,20 +1,27 @@
+# app/schemas/comision.py
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from uuid import UUID
+from app.schemas.base import ComisionResumenOut, DiputadoResumenOut
 
-if TYPE_CHECKING:
-    from app.schemas.proyecto import DiputadoResumenOut, ProyectoResumenOut
 
-class ComisionOut(BaseModel):
+class ComisionOut(ComisionResumenOut):
+    pass  # hereda id, nombre, descripcion
+
+
+class ProyectoResumenBrief(BaseModel):
+    """Versión mínima de proyecto para evitar circular import"""
     id: UUID
-    nombre: str
-    descripcion: Optional[str] = None
-    
+    codigo: str
+    titulo: str
     model_config = ConfigDict(from_attributes=True)
 
-class ComisionResumenOut(ComisionOut):
-    pass
 
 class ComisionDetalleOut(ComisionOut):
-    miembros: list["DiputadoResumenOut"] = []
-    proyectos: list["ProyectoResumenOut"] = []
+    miembros: list[DiputadoResumenOut] = []
+    proyectos: list[ProyectoResumenBrief] = []
+
+
+class ComisionListaOut(ComisionResumenOut):
+    miembros_count: int = 0
+    proyectos_count: int = 0

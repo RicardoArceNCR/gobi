@@ -1,28 +1,11 @@
+from datetime import date, datetime
 from pydantic import BaseModel, field_validator, computed_field, ConfigDict
 from typing import Optional
 from uuid import UUID
-from app.models.proyecto import EstadoProyecto
-from app.schemas.comision import ComisionOut
 
-class TemaOut(BaseModel):
-    id: UUID
-    nombre: str
-    slug: str
-    color_hex: str
-    model_config = {"from_attributes": True}
+from app.models.proyecto import EstadoProyecto, ValorVoto
+from app.schemas.base import TemaOut, DiputadoResumenOut, ComisionResumenOut, PartidoOut
 
-class PartidoOut(BaseModel):
-    id: UUID
-    nombre: str
-    color_hex: str
-    model_config = {"from_attributes": True}
-
-class DiputadoResumenOut(BaseModel):
-    id: UUID
-    nombre: str
-    foto_url: Optional[str]
-    partido: PartidoOut
-    model_config = {"from_attributes": True}
 
 class CambioEstadoOut(BaseModel):
     id: UUID
@@ -31,25 +14,49 @@ class CambioEstadoOut(BaseModel):
     motivo: str
     usuario_nombre: str
     created_at: str
-    model_config = {"from_attributes": True}
+
+    model_config = ConfigDict(from_attributes=True)
 
     @field_validator("created_at", mode="before")
-    def format_date(cls, v):
+    @classmethod
+    def format_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.date().isoformat()
         return str(v)[:10] if v else ""
+
 
 class DocumentoOut(BaseModel):
     id: UUID
     nombre: str
     url: str
     tipo: str
-    model_config = {"from_attributes": True}
+    created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("created_at", mode="before")
+    @classmethod
+    def format_created_at(cls, v):
+        if isinstance(v, datetime):
+            return v.date().isoformat()
+        return str(v)[:10] if v else ""
+
+
+class DiputadoVotoOut(BaseModel):
+    id: UUID
+    nombre: str
+    partido: Optional[PartidoOut] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class VotoOut(BaseModel):
     diputado_id: UUID
-    diputado_nombre: str
-    partido: str
-    valor: str
-    model_config = {"from_attributes": True}
+    valor: ValorVoto
+    diputado: Optional[DiputadoVotoOut] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
 
 class ProyectoResumenOut(BaseModel):
     id: UUID
@@ -59,30 +66,32 @@ class ProyectoResumenOut(BaseModel):
     estado: EstadoProyecto
     fecha_presentacion: str
     proponente: DiputadoResumenOut
-    temas: list[TemaOut]
-
-    # campos relacionados para serialización
-    comision: Optional[ComisionOut] = None
-    updated_at: Optional[object] = None
+    temas: list[TemaOut] = []
+    comision: Optional[ComisionResumenOut] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("fecha_presentacion", mode="before")
+    @classmethod
+    def format_fecha_presentacion(cls, v):
+        if isinstance(v, date):
+            return v.isoformat()
+        return str(v)[:10] if v else ""
 
     @computed_field
     @property
     def fecha_ultimo_cambio(self) -> str:
+        if isinstance(self.updated_at, datetime):
+            return self.updated_at.date().isoformat()
         return str(self.updated_at)[:10] if self.updated_at else ""
 
-    @computed_field
-    @property
-    def comision_nombre(self) -> Optional[str]:
-        if not self.comision:
-            return None
-        return getattr(self.comision, "nombre", None)
 
 class ProyectoDetalleOut(ProyectoResumenOut):
-    historial: list[CambioEstadoOut]
-    documentos: list[DocumentoOut]
-    votos: list[VotoOut]
+    historial: list[CambioEstadoOut] = []
+    documentos: list[DocumentoOut] = []
+    votos: list[VotoOut] = []
+
 
 class ProyectoCreate(BaseModel):
     codigo: str
@@ -90,10 +99,11 @@ class ProyectoCreate(BaseModel):
     descripcion: str
     texto_completo: Optional[str] = None
     estado: EstadoProyecto = EstadoProyecto.presentado
-    fecha_presentacion: str
+    fecha_presentacion: date
     proponente_id: UUID
     comision_id: Optional[UUID] = None
     tema_ids: list[UUID] = []
+
 
 class ProyectoUpdate(BaseModel):
     titulo: Optional[str] = None
@@ -101,6 +111,7 @@ class ProyectoUpdate(BaseModel):
     texto_completo: Optional[str] = None
     comision_id: Optional[UUID] = None
     tema_ids: Optional[list[UUID]] = None
+
 
 class CambioEstadoCreate(BaseModel):
     estado_nuevo: EstadoProyecto

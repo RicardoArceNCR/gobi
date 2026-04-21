@@ -12,9 +12,31 @@ async def get_current_user(
     token = credentials.credentials
     try:
         payload = clerk.verify_token(token)
+
+        public_metadata = payload.get("public_metadata", {}) or {}
+        unsafe_metadata = payload.get("unsafe_metadata", {}) or {}
+
+        nombre = (
+            payload.get("name")
+            or payload.get("nombre")
+            or payload.get("given_name")
+            or unsafe_metadata.get("nombre")
+            or public_metadata.get("nombre")
+            or "Usuario"
+        )
+
+        email = (
+            payload.get("email")
+            or unsafe_metadata.get("email")
+            or public_metadata.get("email")
+            or ""
+        )
+
         return {
             "user_id": payload["sub"],
-            "rol": payload.get("public_metadata", {}).get("rol", "ciudadano"),
+            "rol": public_metadata.get("rol", "ciudadano"),
+            "nombre": nombre,
+            "email": email,
         }
     except Exception:
         raise HTTPException(status_code=401, detail="Token inválido o expirado")

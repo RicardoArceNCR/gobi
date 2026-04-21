@@ -8,6 +8,8 @@ const config = {
   ausente:    { clase: "bg-gray-100 text-gray-500",     etiqueta: "Ausente"    },
 };
 
+const fallback = { clase: "bg-zinc-100 text-zinc-600", etiqueta: "Desconocido" };
+
 export function TablaVotos({ votos }: { votos: Voto[] }) {
   if (!votos.length) return null;
 
@@ -19,14 +21,17 @@ export function TablaVotos({ votos }: { votos: Voto[] }) {
   return (
     <div className="space-y-4">
       <div className="flex gap-3 flex-wrap">
-        {Object.entries(resumen).map(([valor, total]) => (
-          <div
-            key={valor}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium ${config[valor as keyof typeof config].clase}`}
-          >
-            {config[valor as keyof typeof config].etiqueta}: {total}
-          </div>
-        ))}
+        {Object.entries(resumen).map(([valor, total]) => {
+          const configItem = valor in config ? config[valor as keyof typeof config] : fallback;
+          return (
+            <div
+              key={valor}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium ${configItem.clase}`}
+            >
+              {configItem.etiqueta}: {total}
+            </div>
+          );
+        })}
       </div>
       <div className="overflow-x-auto rounded-xl border">
         <table className="w-full text-sm">
@@ -38,17 +43,20 @@ export function TablaVotos({ votos }: { votos: Voto[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {votos.map((v) => (
-              <tr key={v.diputadoId} className="hover:bg-gray-50">
-                <td className="px-4 py-3 font-medium text-gray-900">{v.diputadoNombre}</td>
-                <td className="px-4 py-3 text-gray-500">{v.partido}</td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${config[v.valor].clase}`}>
-                    {config[v.valor].etiqueta}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {votos.map((v) => {
+              const configItem = v.valor in config ? config[v.valor as keyof typeof config] : fallback;
+              return (
+                <tr key={v.diputadoId} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-gray-900">{v.diputadoNombre}</td>
+                  <td className="px-4 py-3 text-gray-500">{v.partido}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${configItem.clase}`}>
+                      {configItem.etiqueta}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

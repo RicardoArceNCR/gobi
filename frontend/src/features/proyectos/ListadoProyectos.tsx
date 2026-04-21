@@ -4,19 +4,15 @@ import { useProyectos } from "./hooks";
 import { ProyectoCard } from "./ProyectoCard";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useSearchParams } from "next/navigation";
+import { Paginacion } from "@/components/ui/Paginacion";
+import type { FiltrosProyecto } from "@/services/proyectos";
 
-export function ListadoProyectos() {
-  const searchParams = useSearchParams();
-  const busqueda = searchParams.get("q") || "";
-  const estado = searchParams.get("estado") || "todos";
-  const tema = searchParams.get("tema") || "";
+interface Props {
+  filtros: FiltrosProyecto;
+}
 
-  const { data, isLoading, isError } = useProyectos({
-    busqueda,
-    estado: estado === "todos" ? undefined : estado,
-    tema,
-  });
+export function ListadoProyectos({ filtros }: Props) {
+  const { data, isLoading, isError } = useProyectos(filtros);
 
   if (isLoading) {
     return (
@@ -49,10 +45,14 @@ export function ListadoProyectos() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      {data.items.map((proyecto) => (
-        <ProyectoCard key={proyecto.id} proyecto={proyecto} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {data.items.map((proyecto) => (
+          <ProyectoCard key={proyecto.id} proyecto={proyecto} />
+        ))}
+      </div>
+
+      <Paginacion page={data.page} totalPages={data.totalPages} />
+    </>
   );
 }

@@ -1,45 +1,44 @@
-// frontend/src/services/proyectos.ts
 import { api } from "./api";
-import { ProyectoLey, EstadoProyecto } from "@/types/index";
+import { limpiarParams } from "@/lib/http";
+import { 
+  BackendProyecto, 
+  BackendPaginaProyectos, 
+  adaptProyecto, 
+  adaptPaginaProyectos 
+} from "@/adapters/proyectos";
+import { ProyectoLey, EstadoProyecto, Pagina } from "@/types/index";
 
 export interface FiltrosProyecto {
   estado?: EstadoProyecto | string;
   tema?: string;
+  partido?: string;
   busqueda?: string;
   page?: number;
 }
 
-export interface PaginaProyectos {
-  items: ProyectoLey[];
-  total: number;
-  page: number;
-  size: number;
-  pages: number;
-}
+export const getProyectos = async (filtros?: FiltrosProyecto): Promise<Pagina<ProyectoLey>> => {
+  const cleanParams = filtros ? limpiarParams(filtros as unknown as Record<string, unknown>) : {};
 
-export const getProyectos = async (filtros?: FiltrosProyecto): Promise<PaginaProyectos> => {
-  const params: Record<string, string | number> = {};
-  
-  if (filtros) {
-    Object.entries(filtros).forEach(([key, value]) => {
-      // Limpia params vacíos
-      if (value !== undefined && value !== null && value !== "") {
-        params[key] = value;
-      }
-    });
-  }
+  const { data } = await api.get<BackendPaginaProyectos>("/proyectos", { 
+    params: cleanParams 
+  });
 
-  const { data } = await api.get<PaginaProyectos>("/proyectos", { params });
-  return data;
+  return adaptPaginaProyectos(data);
 };
 
 export const getProyecto = async (id: string): Promise<ProyectoLey> => {
-  const { data } = await api.get<ProyectoLey>(`/proyectos/${id}`);
-  return data;
+  const { data } = await api.get<BackendProyecto>(`/proyectos/${id}`);
+  return adaptProyecto(data);
 };
 
-export const cambiarEstado = async (id: string, estado: string) => {
-  const { data } = await api.patch(`/proyectos/${id}/estado`, { estado });
-  return data;
-};
+export const cambiarEstado = async (
+  id: string,
+  payload: { estadoNuevo: EstadoProyecto; motivo: string }
+): Promise<ProyectoLey> => {
+  const { data } = await api.patch<BackendProyecto>(`/proyectos/${id}/estado`, {
+    estado_nuevo: payload.estadoNuevo,
+    motivo: payload.motivo,
+  });
 
+  return adaptProyecto(data);
+};

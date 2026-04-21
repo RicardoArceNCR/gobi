@@ -5,8 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatearFecha(fecha: string | Date): string {
-  return new Date(fecha).toLocaleDateString("es-CR", {
+export function formatearFecha(fecha?: string | Date | null): string {
+  if (!fecha) return "Sin fecha";
+
+  const date = new Date(fecha);
+  if (Number.isNaN(date.getTime())) return "Sin fecha";
+
+  return date.toLocaleDateString("es-CR", {
     year: "numeric",
     month: "long",
     day: "numeric",

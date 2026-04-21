@@ -1,9 +1,10 @@
-from sqlalchemy import Column, String, Text, ForeignKey, DateTime, Table, Enum
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, Table, Enum, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid, enum
 from app.database import Base
 from app.models.base import TimestampMixin
+
 
 class EstadoProyecto(str, enum.Enum):
     presentado = "presentado"
@@ -13,11 +14,13 @@ class EstadoProyecto(str, enum.Enum):
     aprobado = "aprobado"
     archivado = "archivado"
 
+
 class ValorVoto(str, enum.Enum):
     a_favor = "a_favor"
     en_contra = "en_contra"
     abstencion = "abstencion"
     ausente = "ausente"
+
 
 # Tabla de unión proyecto <-> tema
 proyecto_tema = Table(
@@ -26,6 +29,7 @@ proyecto_tema = Table(
     Column("proyecto_id", UUID(as_uuid=True), ForeignKey("proyectos_ley.id"), primary_key=True),
     Column("tema_id", UUID(as_uuid=True), ForeignKey("temas.id"), primary_key=True),
 )
+
 
 class Tema(Base):
     __tablename__ = "temas"
@@ -45,7 +49,7 @@ class ProyectoLey(Base, TimestampMixin):
     descripcion = Column(Text, nullable=False)
     texto_completo = Column(Text, nullable=True)
     estado = Column(Enum(EstadoProyecto), nullable=False, default=EstadoProyecto.presentado)
-    fecha_presentacion = Column(String(10), nullable=False)
+    fecha_presentacion = Column(Date, nullable=False)
 
     proponente_id = Column(UUID(as_uuid=True), ForeignKey("diputados.id"), nullable=False)
     comision_id = Column(UUID(as_uuid=True), ForeignKey("comisiones.id"), nullable=True)
@@ -53,7 +57,11 @@ class ProyectoLey(Base, TimestampMixin):
     proponente = relationship("Diputado", back_populates="proyectos")
     comision = relationship("Comision", back_populates="proyectos")
     temas = relationship("Tema", secondary=proyecto_tema)
-    historial = relationship("CambioEstado", back_populates="proyecto", order_by="CambioEstado.created_at")
+    historial = relationship(
+        "CambioEstado",
+        back_populates="proyecto",
+        order_by="CambioEstado.created_at",
+    )
     documentos = relationship("Documento", back_populates="proyecto")
     votos = relationship("Voto", back_populates="proyecto")
 
