@@ -12,26 +12,25 @@
 │   │   ├── GOBi_04_fase-diseno-ux.md
 │   │   ├── GOBi_05_fase-auth-roles.md
 │   │   ├── GOBi_06_fase-admin.md
-│   │   ├── GOBi_07_fase-ai-y-escala.md
-│   │   └── fases.zip
-│   ├── guia.zip
-│   ├── skills
-│   │   ├── SKILLS.md
-│   │   ├── stack
-│   │   │   ├── CLERK.md
-│   │   │   ├── FASTAPI.md
-│   │   │   ├── REACT_QUERY.md
-│   │   │   ├── SQLALCHEMY.md
-│   │   │   └── TAILWIND_SHADCN.md
-│   │   ├── stack.zip
-│   │   ├── tareas
-│   │   │   ├── AGREGAR_FILTRO.md
-│   │   │   ├── AGREGAR_MODULO.md
-│   │   │   ├── CREAR_COMPONENTE.md
-│   │   │   ├── CREAR_ENDPOINT.md
-│   │   │   └── CREAR_MIGRACION.md
-│   │   └── tareas.zip
-│   └── skills.zip
+│   │   └── GOBi_07_fase-ai-y-escala.md
+│   ├── hardening_strategy.md
+│   ├── permisos.md
+│   └── skills
+│       ├── SKILLS.md
+│       ├── stack
+│       │   ├── CLERK.md
+│       │   ├── FASTAPI.md
+│       │   ├── REACT_QUERY.md
+│       │   ├── SQLALCHEMY.md
+│       │   └── TAILWIND_SHADCN.md
+│       ├── stack.zip
+│       ├── tareas
+│       │   ├── AGREGAR_FILTRO.md
+│       │   ├── AGREGAR_MODULO.md
+│       │   ├── CREAR_COMPONENTE.md
+│       │   ├── CREAR_ENDPOINT.md
+│       │   └── CREAR_MIGRACION.md
+│       └── tareas.zip
 ├── frontend
 │   ├── AGENTS.md
 │   ├── README.md
@@ -50,10 +49,17 @@
 │   │   ├── vercel.svg
 │   │   └── window.svg
 │   ├── src
+│   │   ├── adapters
+│   │   │   ├── comisiones.ts
+│   │   │   ├── diputados.ts
+│   │   │   ├── proyectos.ts
+│   │   │   └── temas.ts
 │   │   ├── app
 │   │   │   ├── comisiones
+│   │   │   │   ├── [id]
 │   │   │   │   └── page.tsx
 │   │   │   ├── diputados
+│   │   │   │   ├── [id]
 │   │   │   │   └── page.tsx
 │   │   │   ├── favicon.ico
 │   │   │   ├── globals.css
@@ -69,6 +75,7 @@
 │   │   │       ├── BadgeEstado.tsx
 │   │   │       ├── BadgePrioridad.tsx
 │   │   │       ├── EmptyState.tsx
+│   │   │       ├── Paginacion.tsx
 │   │   │       ├── SkeletonCard.tsx
 │   │   │       ├── TablaVotos.tsx
 │   │   │       ├── TimelineLegislativa.tsx
@@ -88,9 +95,12 @@
 │   │   │       └── temas.ts
 │   │   ├── features
 │   │   │   ├── comisiones
+│   │   │   │   ├── ComisionDetalleView.tsx
 │   │   │   │   ├── ListadoComisiones.tsx
 │   │   │   │   └── hooks.ts
 │   │   │   ├── diputados
+│   │   │   │   ├── DiputadoDetalleView.tsx
+│   │   │   │   ├── FiltrosDiputados.tsx
 │   │   │   │   ├── ListadoDiputados.tsx
 │   │   │   │   └── hooks.ts
 │   │   │   └── proyectos
@@ -99,8 +109,11 @@
 │   │   │       ├── ListadoProyectos.tsx
 │   │   │       ├── ProyectoCard.tsx
 │   │   │       ├── ProyectoDetalleView.tsx
+│   │   │       ├── ProyectoDocumentos.tsx
+│   │   │       ├── ProyectoHeader.tsx
 │   │   │       └── hooks.ts
 │   │   ├── lib
+│   │   │   ├── http.ts
 │   │   │   └── utils.ts
 │   │   ├── providers
 │   │   │   └── QueryProvider.tsx
@@ -108,7 +121,9 @@
 │   │   │   ├── api.ts
 │   │   │   ├── comisiones.ts
 │   │   │   ├── diputados.ts
-│   │   │   └── proyectos.ts
+│   │   │   ├── partidos.ts
+│   │   │   ├── proyectos.ts
+│   │   │   └── temas.ts
 │   │   └── types
 │   │       └── index.ts
 │   ├── tsconfig.json
@@ -122,8 +137,10 @@
 │   │   ├── script.py.mako
 │   │   └── versions
 │   │       ├── 38809398bb7f_initial_tables.py
-│   │       └── __pycache__
-│   │           └── 38809398bb7f_initial_tables.cpython-313.pyc
+│   │       ├── __pycache__
+│   │       │   ├── 38809398bb7f_initial_tables.cpython-313.pyc
+│   │       │   └── f684000d433f_convertir_fechas_string_a_date.cpython-313.pyc
+│   │       └── f684000d433f_convertir_fechas_string_a_date.py
 │   ├── alembic.ini
 │   ├── app
 │   │   ├── __init__.py
@@ -160,18 +177,24 @@
 │   │   │   │   ├── __init__.cpython-313.pyc
 │   │   │   │   ├── comisiones.cpython-313.pyc
 │   │   │   │   ├── diputados.cpython-313.pyc
-│   │   │   │   └── proyectos.cpython-313.pyc
+│   │   │   │   ├── partidos.cpython-313.pyc
+│   │   │   │   ├── proyectos.cpython-313.pyc
+│   │   │   │   └── temas.cpython-313.pyc
 │   │   │   ├── comisiones.py
 │   │   │   ├── diputados.py
-│   │   │   └── proyectos.py
+│   │   │   ├── partidos.py
+│   │   │   ├── proyectos.py
+│   │   │   └── temas.py
 │   │   ├── schemas
 │   │   │   ├── __init__.py
 │   │   │   ├── __pycache__
 │   │   │   │   ├── __init__.cpython-313.pyc
+│   │   │   │   ├── base.cpython-313.pyc
 │   │   │   │   ├── comision.cpython-313.pyc
 │   │   │   │   ├── common.cpython-313.pyc
 │   │   │   │   ├── diputado.cpython-313.pyc
 │   │   │   │   └── proyecto.cpython-313.pyc
+│   │   │   ├── base.py
 │   │   │   ├── comision.py
 │   │   │   ├── common.py
 │   │   │   ├── diputado.py
@@ -182,8 +205,6 @@
 │   │       └── bitacora.py
 │   ├── requirements.txt
 │   ├── scripts
-│   │   ├── __pycache__
-│   │   │   └── seed_demo.cpython-313.pyc
 │   │   └── seed_demo.py
 │   └── venv
 │       ├── bin
@@ -218,6 +239,14 @@
 │       │   └── python3.13
 │       │       └── site-packages
 │       └── pyvenv.cfg
+├── j1-estrategia.txt
+├── j2-config-entorno.txt
+├── j3-auth.txt
+├── j4-contrato-adapters.txt
+├── j5-services-hooks.txt
+├── j6-vistas.txt
+├── j7-backend-dominio.txt
+├── j8-migraciones.txt
 ├── project_wp_tree.txt
 └── public
     └── imgs
@@ -236,4 +265,4 @@
         ├── login.png
         └── pop-up.png
 
-55 directories, 182 files
+57 directories, 209 files

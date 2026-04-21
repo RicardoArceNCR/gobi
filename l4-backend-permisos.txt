@@ -1,0 +1,404 @@
+========================================
+FILE: gobi-backend/app/routers/proyectos.py
+========================================
+from fastapi import APIRouter, Depends, Query, HTTPException
+from sqlalchemy.orm import Session, joinedload, selectinload
+from uuid import UUID
+from typing import Optional
+
+from app.database import get_db
+from app.models.proyecto import ProyectoLey, EstadoProyecto, CambioEstado, Voto
+from app.models.diputado import Diputado
+from app.schemas.proyecto import (
+    ProyectoResumenOut, ProyectoDetalleOut,
+    ProyectoCreate, ProyectoUpdate, CambioEstadoCreate
+)
+from app.schemas.common import PaginatedResponse
+from app.core.auth import get_current_user, require_admin
+from app.services.bitacora import registrar
+from datetime import datetime
+
+router = APIRouter(prefix="/proyectos", tags=["proyectos"])
+
+TRANSICIONES_VALIDAS = {
+    EstadoProyecto.presentado: [EstadoProyecto.en_comision, EstadoProyecto.archivado],
+    EstadoProyecto.en_comision: [EstadoProyecto.en_debate, EstadoProyecto.archivado],
+    EstadoProyecto.en_debate: [EstadoProyecto.votado, EstadoProyecto.archivado],
+    EstadoProyecto.votado: [EstadoProyecto.aprobado, EstadoProyecto.archivado],
+    EstadoProyecto.aprobado: [],
+    EstadoProyecto.archivado: [],
+}
+
+@router.get("", response_model=PaginatedResponse[ProyectoResumenOut])
+def listar_proyectos(
+    estado: Optional[EstadoProyecto] = None,
+    tema: Optional[str] = None,
+    partido: Optional[str] = None,
+    busqueda: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    q = (
+        db.query(ProyectoLey)
+        .options(
+            joinedload(ProyectoLey.comision),
+            joinedload(ProyectoLey.proponente),
+            selectinload(ProyectoLey.temas)
+        )
+    )
+
+    if estado:
+        q = q.filter(ProyectoLey.estado == estado)
+    if busqueda:
+        q = q.filter(
+            ProyectoLey.titulo.ilike(f"%{busqueda}%") |
+            ProyectoLey.codigo.ilike(f"%{busqueda}%")
+        )
+    if tema:
+        from app.models.proyecto import Tema, proyecto_tema
+        q = q.join(proyecto_tema).join(Tema).filter(Tema.slug == tema)
+    if partido:
+        from app.models.diputado import Diputado, Partido
+        q = q.join(Diputado).join(Partido).filter(Partido.nombre.ilike(f"%{partido}%"))
+
+    total = q.count()
+    proyectos = q.offset((page - 1) * page_size).limit(page_size).all()
+
+    return {
+        "items": proyectos,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": -(-total // page_size),
+    }
+
+@router.get("/{proyecto_id}", response_model=ProyectoDetalleOut)
+def obtener_proyecto(proyecto_id: UUID, db: Session = Depends(get_db)):
+    proyecto = (
+        db.query(ProyectoLey)
+        .options(
+            joinedload(ProyectoLey.comision),
+            joinedload(ProyectoLey.proponente).joinedload(Diputado.partido),
+            selectinload(ProyectoLey.temas),
+            selectinload(ProyectoLey.votos)
+                .joinedload(Voto.diputado)
+                .joinedload(Diputado.partido),
+            selectinload(ProyectoLey.documentos),
+            selectinload(ProyectoLey.historial)
+        )
+        .filter(ProyectoLey.id == proyecto_id)
+        .first()
+    )
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+    return proyecto
+
+@router.post("", response_model=ProyectoDetalleOut, status_code=201)
+def crear_proyecto(
+    body: ProyectoCreate,
+    db: Session = Depends(get_db),
+    user=Depends(require_admin),
+):
+    if db.query(ProyectoLey).filter(ProyectoLey.codigo == body.codigo).first():
+        raise HTTPException(status_code=400, detail=f"Ya existe el expediente {body.codigo}")
+
+    proyecto = ProyectoLey(**body.model_dump(exclude={"tema_ids"}))
+
+    if body.tema_ids:
+        from app.models.proyecto import Tema
+        temas = db.query(Tema).filter(Tema.id.in_(body.tema_ids)).all()
+        proyecto.temas = temas
+
+    db.add(proyecto)
+    db.flush()
+
+    registrar(
+        db,
+        "proyecto",
+        str(proyecto.id),
+        "creacion",
+        motivo="Creación inicial",
+        usuario_id=user["user_id"],
+        usuario_nombre=user.get("nombre", "Usuario"),
+    )
+
+    db.commit()
+    db.refresh(proyecto)
+    return proyecto
+
+@router.patch("/{proyecto_id}", response_model=ProyectoDetalleOut)
+def actualizar_proyecto(
+    proyecto_id: UUID,
+    body: ProyectoUpdate,
+    db: Session = Depends(get_db),
+    user=Depends(require_admin),
+):
+    proyecto = db.query(ProyectoLey).filter(ProyectoLey.id == proyecto_id).first()
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+
+    datos = body.model_dump(exclude_unset=True, exclude={"tema_ids"})
+
+    for campo, valor in datos.items():
+        valor_anterior = getattr(proyecto, campo)
+        setattr(proyecto, campo, valor)
+
+        registrar(
+            db,
+            "proyecto",
+            str(proyecto.id),
+            "edicion",
+            motivo="Edición de proyecto",
+            usuario_id=user["user_id"],
+            usuario_nombre=user.get("nombre", "Usuario"),
+            campo_modificado=campo,
+            valor_anterior=str(valor_anterior) if valor_anterior is not None else None,
+            valor_nuevo=str(valor) if valor is not None else None,
+        )
+
+    if body.tema_ids is not None:
+        from app.models.proyecto import Tema
+        proyecto.temas = db.query(Tema).filter(Tema.id.in_(body.tema_ids)).all()
+
+        registrar(
+            db,
+            "proyecto",
+            str(proyecto.id),
+            "edicion",
+            motivo="Actualización de temas",
+            usuario_id=user["user_id"],
+            usuario_nombre=user.get("nombre", "Usuario"),
+            campo_modificado="tema_ids",
+            valor_nuevo=",".join(str(t) for t in body.tema_ids),
+        )
+
+    db.commit()
+    db.refresh(proyecto)
+    return proyecto
+
+@router.patch("/{proyecto_id}/estado", response_model=ProyectoDetalleOut)
+def cambiar_estado(
+    proyecto_id: UUID,
+    body: CambioEstadoCreate,
+    db: Session = Depends(get_db),
+    user=Depends(require_admin),
+):
+    proyecto = db.query(ProyectoLey).filter(ProyectoLey.id == proyecto_id).first()
+    if not proyecto:
+        raise HTTPException(status_code=404, detail="Proyecto no encontrado")
+
+    if proyecto.estado == body.estado_nuevo:
+        raise HTTPException(status_code=400, detail="El proyecto ya tiene ese estado")
+
+    if len(body.motivo.strip()) < 10:
+        raise HTTPException(status_code=400, detail="El motivo debe tener al menos 10 caracteres")
+
+    permitidos = TRANSICIONES_VALIDAS.get(proyecto.estado, [])
+    if body.estado_nuevo not in permitidos:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Transición inválida: {proyecto.estado.value} → {body.estado_nuevo.value}"
+        )
+
+    estado_anterior = proyecto.estado
+
+    cambio = CambioEstado(
+        proyecto_id=proyecto.id,
+        estado_anterior=estado_anterior,
+        estado_nuevo=body.estado_nuevo,
+        motivo=body.motivo,
+        usuario_id=user["user_id"],
+        usuario_nombre=user.get("nombre", "Usuario"),
+        created_at=datetime.utcnow(),
+    )
+
+    proyecto.estado = body.estado_nuevo
+    db.add(cambio)
+
+    registrar(
+        db,
+        "proyecto",
+        str(proyecto.id),
+        "cambio_estado",
+        motivo=body.motivo,
+        usuario_id=user["user_id"],
+        usuario_nombre=user.get("nombre", "Usuario"),
+        campo_modificado="estado",
+        valor_anterior=estado_anterior.value,
+        valor_nuevo=body.estado_nuevo.value,
+    )
+
+    db.commit()
+    db.refresh(proyecto)
+    return proyecto
+
+========================================
+FILE: gobi-backend/app/routers/diputados.py
+========================================
+from fastapi import APIRouter, Depends, Query, HTTPException
+from sqlalchemy.orm import Session, joinedload, selectinload
+from uuid import UUID
+from typing import Optional
+
+from app.database import get_db
+from app.models.diputado import Diputado
+from app.schemas.diputado import DiputadoOut
+from app.schemas.common import PaginatedResponse
+
+router = APIRouter(prefix="/diputados", tags=["diputados"])
+
+
+@router.get("", response_model=PaginatedResponse[DiputadoOut])
+def listar_diputados(
+    partido: Optional[str] = None,
+    busqueda: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    q = db.query(Diputado).options(
+        joinedload(Diputado.partido),
+        selectinload(Diputado.comisiones),
+    )
+
+    if busqueda:
+        q = q.filter(Diputado.nombre.ilike(f"%{busqueda}%"))
+
+    if partido:
+        from app.models.diputado import Partido
+        q = q.join(Partido).filter(Partido.nombre.ilike(f"%{partido}%"))
+
+    total = q.count()
+    items = q.offset((page - 1) * page_size).limit(page_size).all()
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": -(-total // page_size),
+    }
+
+
+@router.get("/{diputado_id}", response_model=DiputadoOut)
+def obtener_diputado(diputado_id: UUID, db: Session = Depends(get_db)):
+    diputado = (
+        db.query(Diputado)
+        .options(
+            joinedload(Diputado.partido),
+            selectinload(Diputado.comisiones),
+        )
+        .filter(Diputado.id == diputado_id)
+        .first()
+    )
+
+    if not diputado:
+        raise HTTPException(status_code=404, detail="Diputado no encontrado")
+
+    return diputado
+
+========================================
+FILE: gobi-backend/app/routers/comisiones.py
+========================================
+from fastapi import APIRouter, Depends, Query, HTTPException
+from sqlalchemy.orm import Session, selectinload, joinedload
+from uuid import UUID
+from typing import Optional
+
+from app.database import get_db
+from app.models.comision import Comision
+from app.models.diputado import Diputado
+from app.schemas.comision import ComisionResumenOut, ComisionDetalleOut, ComisionListaOut
+from app.schemas.common import PaginatedResponse
+
+router = APIRouter(prefix="/comisiones", tags=["comisiones"])
+
+
+@router.get("", response_model=PaginatedResponse[ComisionListaOut])
+def listar_comisiones(
+    busqueda: Optional[str] = None,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    q = db.query(Comision).options(
+        selectinload(Comision.miembros),
+        selectinload(Comision.proyectos)
+    )
+
+    if busqueda:
+        q = q.filter(Comision.nombre.ilike(f"%{busqueda}%"))
+
+    total = q.count()
+    comisiones = q.offset((page - 1) * page_size).limit(page_size).all()
+
+    # Enriquecer con conteos
+    items = []
+    for c in comisiones:
+        comision_dict = ComisionListaOut.model_validate(c).model_dump()
+        comision_dict["miembros_count"] = len(c.miembros)
+        comision_dict["proyectos_count"] = len(c.proyectos)
+        items.append(comision_dict)
+
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": -(-total // page_size),
+    }
+
+
+@router.get("/{comision_id}", response_model=ComisionDetalleOut)
+def obtener_comision(comision_id: UUID, db: Session = Depends(get_db)):
+    comision = (
+        db.query(Comision)
+        .options(
+            selectinload(Comision.miembros).joinedload(Diputado.partido),
+            selectinload(Comision.proyectos),
+        )
+        .filter(Comision.id == comision_id)
+        .first()
+    )
+
+    if not comision:
+        raise HTTPException(status_code=404, detail="Comisión no encontrada")
+
+    return comision
+
+========================================
+FILE: gobi-backend/app/services/bitacora.py
+========================================
+from sqlalchemy.orm import Session
+from datetime import datetime
+from typing import Optional
+from app.models.bitacora import EntradaBitacora
+
+def registrar(
+    db: Session,
+    entidad_tipo: str,
+    entidad_id: str,
+    accion: str,
+    motivo: str,
+    usuario_id: str,
+    usuario_nombre: str,
+    campo_modificado: Optional[str] = None,
+    valor_anterior: Optional[str] = None,
+    valor_nuevo: Optional[str] = None,
+):
+    entrada = EntradaBitacora(
+        entidad_tipo=entidad_tipo,
+        entidad_id=entidad_id,
+        accion=accion,
+        campo_modificado=campo_modificado,
+        valor_anterior=valor_anterior,
+        valor_nuevo=valor_nuevo,
+        motivo=motivo,
+        usuario_id=usuario_id,
+        usuario_nombre=usuario_nombre,
+        created_at=datetime.utcnow(),
+    )
+    db.add(entrada)
+    db.flush()
+

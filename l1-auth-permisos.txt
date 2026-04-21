@@ -1,0 +1,166 @@
+========================================
+FILE: frontend/src/app/layout.tsx
+========================================
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { Navbar } from "@/components/layout/Navbar";
+import { QueryProvider } from "@/providers/QueryProvider";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "GOBi",
+  description: "Plataforma de inteligencia política para Costa Rica. Traduce la actividad legislativa en información navegable, entendible y accionable.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="es"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-gray-50">
+        <QueryProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+        </QueryProvider>
+      </body>
+    </html>
+  );
+}
+
+========================================
+FILE: frontend/src/services/api.ts
+========================================
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  timeout: 10000,
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    let message = "Ocurrió un error inesperado";
+    const status = error.response?.status;
+
+    if (error.code === "ECONNABORTED") {
+      message = "La conexión tardó demasiado tiempo";
+    } else if (status === 401) {
+      message = "Tu sesión ha expirado";
+    } else if (status === 403) {
+      message = "No tienes permisos para realizar esta acción";
+    } else if (status === 404) {
+      message = "El recurso solicitado no existe";
+    } else if (status >= 500) {
+      message = "Error en el servidor. Intenta de nuevo más tarde";
+    }
+
+    const normalizedError = {
+      message,
+      status,
+      originalError: error,
+    };
+
+    console.error("API ERROR:", normalizedError);
+    return Promise.reject(normalizedError);
+  }
+);
+
+const configurarToken = async (getToken: () => Promise<string | null>) => {
+  const token = await getToken();
+  if (token) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common["Authorization"];
+  }
+};
+
+export { api, configurarToken };
+
+========================================
+FILE: frontend/src/providers/AuthProvider.tsx
+========================================
+(archivo no encontrado)
+
+========================================
+FILE: gobi-backend/app/core/auth.py
+========================================
+from fastapi import HTTPException, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from clerk_backend_api import Clerk
+from app.core.config import settings
+
+security = HTTPBearer()
+clerk = Clerk(bearer_auth=settings.CLERK_SECRET_KEY)
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    token = credentials.credentials
+    try:
+        payload = clerk.verify_token(token)
+
+        public_metadata = payload.get("public_metadata", {}) or {}
+        unsafe_metadata = payload.get("unsafe_metadata", {}) or {}
+
+        nombre = (
+            payload.get("name")
+            or payload.get("nombre")
+            or payload.get("given_name")
+            or unsafe_metadata.get("nombre")
+            or public_metadata.get("nombre")
+            or "Usuario"
+        )
+
+        email = (
+            payload.get("email")
+            or unsafe_metadata.get("email")
+            or public_metadata.get("email")
+            or ""
+        )
+
+        return {
+            "user_id": payload["sub"],
+            "rol": public_metadata.get("rol", "ciudadano"),
+            "nombre": nombre,
+            "email": email,
+        }
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+
+async def require_admin(user=Security(get_current_user)):
+    if user["rol"] != "admin":
+        raise HTTPException(status_code=403, detail="Se requiere rol de administrador")
+    return user
+
+========================================
+FILE: gobi-backend/app/core/config.py
+========================================
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    DATABASE_URL: str
+    CLERK_SECRET_KEY: str
+    CLERK_JWT_ISSUER: str
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+

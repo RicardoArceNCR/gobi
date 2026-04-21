@@ -1,0 +1,84 @@
+.
+├── AGENTS.md
+├── README.md
+├── components.json
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── project_wp_tree.txt
+├── public
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── src
+│   ├── app
+│   │   ├── comisiones
+│   │   │   └── page.tsx
+│   │   ├── diputados
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── proyectos
+│   │       ├── [id]
+│   │       │   └── page.tsx
+│   │       └── page.tsx
+│   ├── components
+│   │   ├── layout
+│   │   │   └── Navbar.tsx
+│   │   └── ui
+│   │       ├── BadgeEstado.tsx
+│   │       ├── BadgePrioridad.tsx
+│   │       ├── EmptyState.tsx
+│   │       ├── SkeletonCard.tsx
+│   │       ├── TablaVotos.tsx
+│   │       ├── TimelineLegislativa.tsx
+│   │       ├── badge.tsx
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── dialog.tsx
+│   │       ├── separator.tsx
+│   │       ├── skeleton.tsx
+│   │       └── table.tsx
+│   ├── data
+│   │   └── mock
+│   │       ├── comisiones.ts
+│   │       ├── comunicados.ts
+│   │       ├── diputados.ts
+│   │       ├── proyectos.ts
+│   │       └── temas.ts
+│   ├── features
+│   │   ├── comisiones
+│   │   │   ├── ListadoComisiones.tsx
+│   │   │   └── hooks.ts
+│   │   ├── diputados
+│   │   │   ├── ListadoDiputados.tsx
+│   │   │   └── hooks.ts
+│   │   └── proyectos
+│   │       ├── FeedLegislativo.tsx
+│   │       ├── FiltrosProyecto.tsx
+│   │       ├── ListadoProyectos.tsx
+│   │       ├── ProyectoCard.tsx
+│   │       ├── ProyectoDetalleView.tsx
+│   │       └── hooks.ts
+│   ├── lib
+│   │   └── utils.ts
+│   ├── providers
+│   │   └── QueryProvider.tsx
+│   ├── services
+│   │   ├── api.ts
+│   │   ├── comisiones.ts
+│   │   ├── diputados.ts
+│   │   └── proyectos.ts
+│   └── types
+│       └── index.ts
+├── tsconfig.json
+└── tsconfig.tsbuildinfo
+
+21 directories, 61 files
