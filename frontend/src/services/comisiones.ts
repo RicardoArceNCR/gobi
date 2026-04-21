@@ -1,23 +1,24 @@
-// frontend/src/services/comisiones.ts
 import { api } from "./api";
-import { Comision, FiltrosComision } from "@/types/index";
+import { limpiarParams } from "@/lib/http";
+import { 
+  BackendComisionDetalle, 
+  BackendPaginaComisiones, 
+  adaptComisionDetalle, 
+  adaptPaginaComisiones 
+} from "@/adapters/comisiones";
+import { Comision, FiltrosComision, Pagina } from "@/types/index";
 
-export const getComisiones = async (params?: FiltrosComision): Promise<Comision[]> => {
-  const cleanParams: Record<string, string | number> = {};
-  
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        cleanParams[key] = value;
-      }
-    });
-  }
+export const getComisiones = async (params?: FiltrosComision): Promise<Pagina<Comision>> => {
+  const cleanParams = params ? limpiarParams(params as unknown as Record<string, unknown>) : {};
 
-  const { data } = await api.get<Comision[]>("/comisiones", { params: cleanParams });
-  return data;
+  const { data } = await api.get<BackendPaginaComisiones>("/comisiones", {
+    params: cleanParams,
+  });
+
+  return adaptPaginaComisiones(data);
 };
 
 export const getComision = async (id: string): Promise<Comision> => {
-  const { data } = await api.get<Comision>(`/comisiones/${id}`);
-  return data;
+  const { data } = await api.get<BackendComisionDetalle>(`/comisiones/${id}`);
+  return adaptComisionDetalle(data);
 };

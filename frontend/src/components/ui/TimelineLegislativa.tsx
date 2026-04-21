@@ -18,7 +18,7 @@ export function TimelineLegislativa({ historial }: { historial: CambioEstado[] }
               <span className="text-xs text-gray-400">{formatearFecha(entrada.fecha)}</span>
             </div>
             <p className="text-sm text-gray-600">{entrada.motivo}</p>
-            <p className="text-xs text-gray-400 mt-0.5">por {entrada.usuarioNombre}</p>
+            <p className="text-xs text-gray-400 mt-0.5">por {entrada.usuarioNombre || "Sistema"}</p>
           </div>
         </div>
       ))}

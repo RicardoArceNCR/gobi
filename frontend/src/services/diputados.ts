@@ -1,22 +1,24 @@
 import { api } from "./api";
-import { Diputado, FiltrosDiputados } from "@/types/index";
+import { limpiarParams } from "@/lib/http";
+import { 
+  BackendDiputado, 
+  BackendPaginaDiputados, 
+  adaptDiputado, 
+  adaptPaginaDiputados 
+} from "@/adapters/diputados";
+import { Diputado, FiltrosDiputados, Pagina } from "@/types/index";
 
-export const getDiputados = async (params?: FiltrosDiputados): Promise<Diputado[]> => {
-  const cleanParams: Record<string, string | number> = {};
-  
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        cleanParams[key] = value;
-      }
-    });
-  }
+export const getDiputados = async (params?: FiltrosDiputados): Promise<Pagina<Diputado>> => {
+  const cleanParams = params ? limpiarParams(params as unknown as Record<string, unknown>) : {};
 
-  const { data } = await api.get<Diputado[]>("/diputados", { params: cleanParams });
-  return data;
+  const { data } = await api.get<BackendPaginaDiputados>("/diputados", {
+    params: cleanParams,
+  });
+
+  return adaptPaginaDiputados(data);
 };
 
 export const getDiputado = async (id: string): Promise<Diputado> => {
-  const { data } = await api.get<Diputado>(`/diputados/${id}`);
-  return data;
+  const { data } = await api.get<BackendDiputado>(`/diputados/${id}`);
+  return adaptDiputado(data);
 };

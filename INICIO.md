@@ -10,25 +10,24 @@
 Plataforma de inteligencia política para Costa Rica. Traduce la actividad
 legislativa en información navegable, entendible y accionable.
 
-**Stack:** Next.js 14 + TypeScript + Tailwind + shadcn/ui · FastAPI + SQLAlchemy 2.0 · PostgreSQL 15 · Clerk · React Query v5
+**Stack:** Next.js 16.2.4 + React 19.2.4 + TypeScript + Tailwind CSS 4 + shadcn/ui · FastAPI 0.136.0 + SQLAlchemy 2.0 · PostgreSQL 15 · Clerk · React Query v5
 
 ---
 
 ## Estado actual del proyecto
 
-> Última actualización: Fase 3 completa.
-> Tags git: `v0.5-backend-base` (Fase 2 completa)
+> Última actualización: Fase 3.5 Hardening completa.
+> Estado operativo real: Fase 3.5 — endurecimiento técnico finalizado.
 
-```
 [x] Fase 0 — Infraestructura base
 [x] Fase 1 — Frontend base
-[x] Fase 2 — Backend FastAPI         ← tag: v0.5-backend-base
-[x] Fase 3 — Consumo de API          ← COMPLETADA
-[ ] Fase 4 — Diseño UX               ← SIGUIENTE
+[x] Fase 2 — Backend FastAPI
+[x] Fase 3 — Consumo de API
+[x] Fase 3.5 — Hardening técnico ✅
+[ ] Fase 4 — Diseño UX
 [ ] Fase 5 — Auth y roles
 [ ] Fase 6 — Panel admin
 [ ] Fase 7 — AI y escala
-```
 
 ---
 
@@ -49,10 +48,11 @@ frontend/src/
   providers/
     QueryProvider.tsx         ✅ React Query v5 configurado
   services/
-    api.ts                    ✅ instancia Axios + configurarToken() (para Clerk en Fase 5)
+    api.ts                    ✅ instancia Axios + normalización de errores
     proyectos.ts              ✅ getProyectos(), getProyecto(), cambiarEstado()
     diputados.ts              ✅ getDiputados(), getDiputado()
     comisiones.ts             ✅ getComisiones(), getComision()
+    partidos.ts               ✅ getPartidos()
   components/
     ui/
       badge.tsx               ✅ shadcn base
@@ -76,12 +76,18 @@ frontend/src/
       FiltrosProyecto.tsx     ✅ filtros en URL con Suspense
       ListadoProyectos.tsx    ✅ conectado a API con 3 estados
       FeedLegislativo.tsx     ✅ feed home ordenado por prioridad
-      ProyectoDetalleView.tsx ✅ detalle con timeline y votos
+      ProyectoDetalleView.tsx ✅ detalle (refactorizado en subcomponentes)
+      ProyectoHeader.tsx      ✅ subcomponente detalle
+      ProyectoDocumentos.tsx  ✅ subcomponente detalle
       hooks.ts                ✅ useProyectos(), useProyecto(), useCambiarEstado()
     diputados/
-      ListadoDiputados.tsx    ✅ conectado a API
-      hooks.ts                ✅ useDiputados(), useDiputado()
+      ListadoDiputados.tsx    ✅ conectado a API + paginación + links
+      FiltrosDiputados.tsx    ✅ filtros por búsqueda y partido
+      DiputadoDetalleView.tsx ✅ detalle completo
+      hooks.ts                ✅ useDiputados(), useDiputado(), usePartidos()
     comisiones/
+      ListadoComisiones.tsx   ✅ conectado a API + conteos + paginación
+      ComisionDetalleView.tsx ✅ detalle completo
       hooks.ts                ✅ useComisiones(), useComision()
   app/
     layout.tsx                ✅ título GOBi, Navbar, QueryProvider, metadata
@@ -95,7 +101,8 @@ frontend/src/
 
 ---
 
-## Siguiente Paso (Fase 4 - Diseño UX)
-- Crear el sistema de tokens de diseño global y consistencia visual.
-- Refinar componentes, el layout general, y asegurar responsiveness en todas las dimensiones de pantalla.
-- Añadir estados activos (hovers), interactividad, texturas ligeras al fondo y limpieza estética al nivel de los estándares altos del stack.
+## Alertas actuales
+- README público aún incompleto (en curso)
+- Bitácora estratégica definida, falta implementación robusta
+- Auth útil para backend existe, pero falta cerrar integración frontend completa
+- Permisos formales definidos en estrategia, pendientes de middleware

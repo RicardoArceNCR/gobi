@@ -1,11 +1,29 @@
 import { ListadoDiputados } from "@/features/diputados/ListadoDiputados";
+import { FiltrosDiputados } from "@/features/diputados/FiltrosDiputados";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Diputados | GOBi",
 };
 
-export default function DiputadosPage() {
+type Props = {
+  searchParams?: Promise<{
+    busqueda?: string;
+    partido?: string;
+    page?: string;
+  }>;
+};
+
+export default async function DiputadosPage({ searchParams }: Props) {
+  const params = (await searchParams) ?? {};
+
+  const filtros = {
+    busqueda: params.busqueda ?? undefined,
+    partido: params.partido ?? undefined,
+    page: params.page ? Number(params.page) : 1,
+  };
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl">
       <div className="mb-8 border-b pb-6">
@@ -15,7 +33,10 @@ export default function DiputadosPage() {
         </p>
       </div>
 
-      <ListadoDiputados />
+      <Suspense fallback={<div className="h-20 bg-gray-50 animate-pulse rounded-xl mb-6" />}>
+        <FiltrosDiputados />
+      </Suspense>
+      <ListadoDiputados filtros={filtros} />
     </div>
   );
 }

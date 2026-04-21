@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from sqlalchemy.orm import Session
 
 from app.database import SessionLocal
@@ -31,7 +31,7 @@ def get_or_create_diputado(
     partido: Partido,
     salario: int,
     monto_gasolina: int,
-    fecha_inicio: str,
+    fecha_inicio: date,
     foto_url: str | None = None,
 ) -> Diputado:
     item = db.query(Diputado).filter(Diputado.nombre == nombre).first()
@@ -75,7 +75,7 @@ def get_or_create_proyecto(
     codigo: str,
     titulo: str,
     descripcion: str,
-    fecha_presentacion: str,
+    fecha_presentacion: date,
     estado: EstadoProyecto,
     proponente: Diputado,
     comision: Comision | None,
@@ -176,7 +176,7 @@ def seed() -> None:
             partido=liberal,
             salario=4200000,
             monto_gasolina=500000,
-            fecha_inicio="2024-05-01",
+            fecha_inicio=date.fromisoformat("2024-05-01"),
         )
         carlos = get_or_create_diputado(
             db,
@@ -184,7 +184,7 @@ def seed() -> None:
             partido=verde,
             salario=4200000,
             monto_gasolina=500000,
-            fecha_inicio="2024-05-01",
+            fecha_inicio=date.fromisoformat("2024-05-01"),
         )
         sofia = get_or_create_diputado(
             db,
@@ -192,7 +192,7 @@ def seed() -> None:
             partido=liberal,
             salario=4200000,
             monto_gasolina=500000,
-            fecha_inicio="2024-05-01",
+            fecha_inicio=date.fromisoformat("2024-05-01"),
         )
 
         # Comisiones
@@ -228,7 +228,7 @@ def seed() -> None:
             codigo="EXP-2025-001",
             titulo="Reforma al sistema nacional de becas universitarias",
             descripcion="Amplía cobertura, criterios de acceso y mecanismos de seguimiento para becas públicas.",
-            fecha_presentacion="2025-02-10",
+            fecha_presentacion=date.fromisoformat("2025-02-10"),
             estado=EstadoProyecto.en_comision,
             proponente=ana,
             comision=educacion,
@@ -241,7 +241,7 @@ def seed() -> None:
             codigo="EXP-2025-002",
             titulo="Ley de movilidad eléctrica para transporte público",
             descripcion="Promueve incentivos para la transición a flotillas eléctricas en buses y trenes.",
-            fecha_presentacion="2025-02-20",
+            fecha_presentacion=date.fromisoformat("2025-02-20"),
             estado=EstadoProyecto.en_debate,
             proponente=carlos,
             comision=ambiente,
@@ -254,7 +254,7 @@ def seed() -> None:
             codigo="EXP-2025-003",
             titulo="Fondo nacional para infraestructura escolar",
             descripcion="Crea un fondo permanente para mantenimiento y ampliación de centros educativos.",
-            fecha_presentacion="2025-03-01",
+            fecha_presentacion=date.fromisoformat("2025-03-01"),
             estado=EstadoProyecto.presentado,
             proponente=sofia,
             comision=educacion,
@@ -267,7 +267,7 @@ def seed() -> None:
             codigo="EXP-2025-004",
             titulo="Ley de transparencia presupuestaria legislativa",
             descripcion="Obliga a publicar gasto, contrataciones y ejecución presupuestaria en formatos abiertos.",
-            fecha_presentacion="2025-03-12",
+            fecha_presentacion=date.fromisoformat("2025-03-12"),
             estado=EstadoProyecto.presentado,
             proponente=ana,
             comision=None,
@@ -280,7 +280,7 @@ def seed() -> None:
             codigo="EXP-2025-005",
             titulo="Protección integral de cuencas hidrográficas",
             descripcion="Fortalece medidas de conservación, monitoreo y sanción en cuencas prioritarias.",
-            fecha_presentacion="2025-03-18",
+            fecha_presentacion=date.fromisoformat("2025-03-18"),
             estado=EstadoProyecto.en_comision,
             proponente=carlos,
             comision=ambiente,
@@ -293,15 +293,30 @@ def seed() -> None:
             db,
             p1,
             [
-                (EstadoProyecto.presentado, EstadoProyecto.en_comision, "Ingresó a comisión para análisis técnico.", "Sistema"),
+                (
+                    EstadoProyecto.presentado,
+                    EstadoProyecto.en_comision,
+                    "Ingresó a comisión para análisis técnico.",
+                    "Sistema",
+                ),
             ],
         )
         add_historial_if_empty(
             db,
             p2,
             [
-                (EstadoProyecto.presentado, EstadoProyecto.en_comision, "Asignado a Comisión de Ambiente.", "Sistema"),
-                (EstadoProyecto.en_comision, EstadoProyecto.en_debate, "Dictamen favorable y pase a debate.", "Sistema"),
+                (
+                    EstadoProyecto.presentado,
+                    EstadoProyecto.en_comision,
+                    "Asignado a Comisión de Ambiente.",
+                    "Sistema",
+                ),
+                (
+                    EstadoProyecto.en_comision,
+                    EstadoProyecto.en_debate,
+                    "Dictamen favorable y pase a debate.",
+                    "Sistema",
+                ),
             ],
         )
 

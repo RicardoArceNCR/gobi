@@ -14,6 +14,14 @@ export type RolUsuario = "ciudadano" | "diputado" | "admin";
 
 export type ValorVoto = "a_favor" | "en_contra" | "abstencion" | "ausente";
 
+export interface Pagina<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
 export interface Tema {
   id: string;
   nombre: string;
@@ -28,16 +36,20 @@ export interface Partido {
   logoUrl?: string;
 }
 
-export interface Diputado {
+export interface DiputadoResumen {
   id: string;
   nombre: string;
   fotoUrl?: string;
-  partidoId: string;
-  partido: Partido;
+  partidoId?: string;
+  partido?: Partido;
+}
+
+export interface Diputado extends DiputadoResumen {
   comisionIds: string[];
-  salario: number;
-  montoGasolina: number;
-  fechaInicio: string;
+  comisiones?: Comision[];
+  salario?: number;
+  montoGasolina?: number;
+  fechaInicio?: string;
 }
 
 export interface CambioEstado {
@@ -54,13 +66,13 @@ export interface Documento {
   nombre: string;
   url: string;
   tipo: "pdf" | "audio" | "video";
-  fechaSubida: string;
+  fechaSubida?: string;
 }
 
 export interface Voto {
   diputadoId: string;
-  diputadoNombre: string;
-  partido: string;
+  diputadoNombre?: string;
+  partido?: string;
   valor: ValorVoto;
 }
 
@@ -69,17 +81,17 @@ export interface ProyectoLey {
   codigo: string;
   titulo: string;
   descripcion: string;
-  textoCompleto?: string; // camelCase en frontend (snake_case en backend)
+  textoCompleto?: string;
   estado: EstadoProyecto;
   fechaPresentacion: string;
-  fechaUltimoCambio: string;
-  proponente: Diputado;
-  comisionId: string;
-  comisionNombre: string;
+  fechaUltimoCambio?: string;
+  proponente: DiputadoResumen;
+  comisionId?: string;
+  comisionNombre?: string;
   temas: Tema[];
-  historial: CambioEstado[];
-  documentos: Documento[];
-  votos: Voto[];
+  historial?: CambioEstado[];
+  documentos?: Documento[];
+  votos?: Voto[];
   prioridad?: PrioridadFeed;
 }
 
@@ -98,20 +110,29 @@ export interface Comunicado {
   prioridad: PrioridadFeed;
 }
 
+export interface ProyectoBrief {
+  id: string;
+  codigo: string;
+  titulo: string;
+}
+
 export interface Comision {
   id: string;
   nombre: string;
-  descripcion: string;
-  miembros: Diputado[];
-  proyectosActivos: number;
+  descripcion?: string;
+  miembros?: Diputado[];
+  miembrosCount?: number;
+  proyectosActivos?: number;
+  proyectos?: ProyectoBrief[];
 }
 
 export interface FiltrosComision {
   busqueda?: string;
-  tema?: string;
+  page?: number;
 }
 
 export interface FiltrosDiputados {
-  [key: string]: string | number | undefined;
+  busqueda?: string;
+  partido?: string;
+  page?: number;
 }
-
