@@ -74,7 +74,7 @@ export function ListadoComisiones() {
                   Proyectos
                 </span>
                 <span className="text-sm font-semibold text-gray-700">
-                  {comision.proyectosActivos ?? 0}
+                  {comision.proyectosCount ?? 0}
                 </span>
               </div>
             </div>

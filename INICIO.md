@@ -1,30 +1,35 @@
 # INICIO.md — GOBi: Punto de entrada para el agente
 
 > Lee este archivo primero en cada sesión nueva.
-> Luego carga el skill específico que necesites de `/docs/skills/`.
+> Luego carga el skill o documento específico que necesites de `/docs/skills/` o `/docs/guia/`.
 
 ---
 
 ## Qué es GOBi
 
-Plataforma de inteligencia política para Costa Rica. Traduce la actividad
-legislativa en información navegable, entendible y accionable.
+GOBi es una plataforma de inteligencia política para Costa Rica.
+Traduce la actividad legislativa en información navegable, entendible y accionable.
 
-**Stack:** Next.js 16.2.4 + React 19.2.4 + TypeScript + Tailwind CSS 4 + shadcn/ui · FastAPI 0.136.0 + SQLAlchemy 2.0 · PostgreSQL 15 · Clerk · React Query v5
+**Stack actual**
+- Frontend: Next.js 16.2.4 + React 19.2.4 + TypeScript + Tailwind CSS 4 + shadcn/ui
+- Datos frontend: React Query v5 + Axios
+- Auth: Clerk
+- Backend: FastAPI + SQLAlchemy 2
+- Base de datos: PostgreSQL
+- Migraciones: Alembic
 
 ---
 
 ## Estado actual del proyecto
 
-> Última actualización: Fase 3.5 funcionalmente cerrada.
-> Estado operativo real: transición entre Fase 3.5 y Fase 4.
-> El hardening técnico principal está implementado, pero aún requiere validación final en auth, permisos y bitácora antes de considerar el cierre total de fase.
+> Última actualización real: Fase 3.5 en cierre técnico
+> Estado operativo: base funcional + hardening antes de UX avanzada y panel admin
 
 [x] Fase 0 — Infraestructura base
 [x] Fase 1 — Frontend base
 [x] Fase 2 — Backend FastAPI
 [x] Fase 3 — Consumo de API
-[~] Fase 3.5 — Hardening técnico funcionalmente cerrado, pendiente validación final
+[~] Fase 3.5 — Hardening técnico ← ACTUAL
 [ ] Fase 4 — Diseño UX
 [ ] Fase 5 — Auth y roles
 [ ] Fase 6 — Panel admin
@@ -32,134 +37,134 @@ legislativa en información navegable, entendible y accionable.
 
 ---
 
-## Lo que existe hoy
+## Objetivo actual real
 
-frontend/src/
-  types/
-    index.ts                  ✅ Tipos TypeScript unificados
-  adapters/
-    proyectos.ts              ✅ Normalización backend → frontend
-    diputados.ts              ✅ Normalización backend → frontend
-    comisiones.ts             ✅ Normalización backend → frontend
-    temas.ts                  ✅ Normalización backend → frontend
-  lib/
-    utils.ts                  ✅ Helpers compartidos
-    http.ts                   ✅ Limpieza de params HTTP
-  providers/
-    QueryProvider.tsx         ✅ React Query v5 configurado
-  services/
-    api.ts                    ✅ Axios centralizado + normalización de errores
-    proyectos.ts              ✅ Listado, detalle, cambio de estado
-    diputados.ts              ✅ Listado y detalle
-    comisiones.ts             ✅ Listado y detalle
-    temas.ts                  ✅ Fuente real para filtros
-    partidos.ts               ✅ Fuente para filtros de diputados
-  components/
-    ui/
-      BadgeEstado.tsx         ✅ Estados legislativos
-      BadgePrioridad.tsx      ✅ Prioridad de feed
-      EmptyState.tsx          ✅ Vacío y error
-      SkeletonCard.tsx        ✅ Loading
-      TablaVotos.tsx          ✅ Votos
-      TimelineLegislativa.tsx ✅ Historial legislativo
-      Paginacion.tsx          ✅ Navegación paginada
-    layout/
-      Navbar.tsx              ✅ Navegación principal
-  features/
-    proyectos/
-      hooks.ts                ✅ Queries y mutaciones
-      FiltrosProyecto.tsx     ✅ Filtros en URL
-      ListadoProyectos.tsx    ✅ Listado conectado a API
-      ProyectoDetalleView.tsx ✅ Detalle completo
-    diputados/
-      hooks.ts                ✅ Queries
-      ListadoDiputados.tsx    ✅ Listado conectado a API
-      FiltrosDiputados.tsx    ✅ Filtros
-      DiputadoDetalleView.tsx ✅ Detalle
-    comisiones/
-      hooks.ts                ✅ Queries
-      ListadoComisiones.tsx   ✅ Listado con conteos reales
-      ComisionDetalleView.tsx ✅ Detalle
-  app/
-    layout.tsx                ✅ Estructura global
-    page.tsx                  ✅ Inicio
-    proyectos/                ✅ Listado y detalle
-    diputados/                ✅ Listado y detalle
-    comisiones/               ✅ Listado y detalle
+Antes de pasar a la siguiente fase, el objetivo no es agregar más features.
 
-gobi-backend/app/
-  core/
-    config.py                 ✅ Configuración central
-    auth.py                   ✅ Validación base de token y rol admin
-  models/
-    proyecto.py               ✅ Dominio principal legislativo
-    diputado.py               ✅ Diputados y partidos
-    comision.py               ✅ Comisiones
-  schemas/
-    base.py                   ✅ Tipos base compartidos
-    common.py                 ✅ Paginación genérica
-    proyecto.py               ✅ Contratos de proyectos
-    diputado.py               ✅ Contratos de diputados
-    comision.py               ✅ Contratos de comisiones
-  routers/
-    proyectos.py              ✅ Listado, detalle, edición y cambio de estado
-    diputados.py              ✅ Listado y detalle
-    comisiones.py             ✅ Listado y detalle
-    temas.py                  ✅ Filtros reales
-  services/
-    bitacora.py               ✅ Base de auditoría de proyectos
+El objetivo actual es:
+
+1. cerrar auth end-to-end entre Clerk, frontend y backend
+2. estabilizar permisos por capability
+3. validar migraciones de fechas y consistencia del dominio
+4. terminar de sacar dependencias híbridas mock/API
+5. dejar documentación base alineada con el estado real
 
 ---
 
-## Logros de la fase 3.5
+## Lo que ya existe hoy
 
-- Contrato frontend-backend más estable mediante adapters.
-- Paginación unificada entre backend (`page_size`, `total_pages`) y frontend (`pageSize`, `totalPages`).
-- Filtros de proyectos conectados a datos reales.
-- Conteos reales en comisiones.
-- Manejo de errores HTTP centralizado.
-- Mutaciones principales de proyectos con invalidación de cache.
-- Base de auth y permisos iniciada en backend.
+### Frontend
+- layout global con ClerkProvider, Navbar y QueryProvider
+- servicios conectados a API:
+  - proyectos
+  - diputados
+  - comisiones
+  - temas
+- adapters para normalizar respuestas del backend
+- hooks con React Query para listados, detalles y mutaciones
+- componentes UI reutilizables:
+  - BadgeEstado
+  - BadgePrioridad
+  - EmptyState
+  - SkeletonCard
+  - TimelineLegislativa
+  - TablaVotos
+  - Paginacion
+- módulos operativos:
+  - proyectos: listado, filtros, detalle, cambio de estado
+  - diputados: listado y detalle
+  - comisiones: listado y detalle
+  - feed legislativo en home
+
+### Backend
+- routers operativos:
+  - /proyectos
+  - /diputados
+  - /comisiones
+  - /temas
+- paginación homogénea
+- filtros básicos por estado, tema, partido y búsqueda
+- protección por capabilities en mutaciones de proyectos
+- verificación de token Clerk en backend
+- bitácora conectada a mutaciones principales de proyectos
+- migraciones con Alembic
+- seed demo funcional
+
+---
+
+## Estado técnico real
+
+### Ya resuelto o bien encaminado
+- arquitectura frontend consistente:
+  - Componente → Hook → Service → API
+- consumo real de `/temas` desde API
+- permisos por capability en vez de checks manuales
+- migración para pasar fechas string a tipo date
+- normalización de datos con adapters
+
+### Pendiente antes de avanzar de fase
+- montar `AuthProvider` en el layout global para sincronizar token con Axios
+- validar flujo completo login → token → request protegida → logout
+- rotar y proteger llaves/secretos expuestos localmente
+- terminar de revisar que no queden dependencias híbridas mock/API
+- ampliar la cobertura de bitácora según próximas mutaciones
+- actualizar README público para que refleje el estado real actual
 
 ---
 
 ## Alertas actuales
 
-- Auth extremo a extremo aún no está cerrado.
-- Clerk frontend no debe considerarse operativo hasta validar integración real de token.
-- Permisos por rol aún requieren cierre funcional y middleware completo.
-- La bitácora existe en proyectos, pero todavía no debe considerarse una auditoría completa del sistema.
-- README público aún puede mejorar en precisión y onboarding.
-- Antes de pasar de fase debe hacerse validación final de estabilidad, permisos y documentación.
+### 1. Auth aún no está cerrado end-to-end
+Existe `AuthProvider`, pero si no está montado en el árbol principal, Clerk puede estar activo en UI sin asegurar que Axios mande token en toda la app.
+
+### 2. Seguridad de secretos
+Nunca subir ni compartir claves reales o completas en commits, snapshots o chats.
+Si una clave fue expuesta, debe rotarse.
+
+### 3. Fase 3.5 no se considera cerrada todavía
+No pasar a UX avanzada, panel admin o nuevas capacidades grandes hasta cerrar:
+- auth real
+- fechas estables
+- documentación base
+- revisión final de integración
 
 ---
 
-## Criterio para pasar a la siguiente fase
+## Criterios para cerrar Fase 3.5
 
-Solo pasar a Fase 4 cuando se cumpla:
+La fase actual se considera cerrada cuando:
 
-1. Auth frontend ↔ backend validada.
-2. Permisos mínimos por rol implementados.
-3. Bitácora de proyectos validada como suficiente para la siguiente fase.
-4. Documentación alineada con el estado real.
-5. Cierre de bloqueadores técnicos de hardening.
-
----
-
-## Regla operativa
-
-Durante esta etapa:
-- No abrir nuevas capas grandes de UX sin cerrar auth/permisos.
-- No volver a mock data en flujos productivos.
-- No romper el flujo:
-  Componente → Hook → Service → API
-- Mantener filtros en URL.
-- Mantener 3 estados por petición: loading, error, vacío.
+- [ ] `AuthProvider` está integrado en el layout global
+- [ ] frontend manda token correctamente a endpoints protegidos
+- [ ] backend valida token y capabilities de forma consistente
+- [ ] migraciones de fechas están aplicadas y validadas
+- [ ] temas vienen 100% desde API
+- [ ] README e INICIO reflejan el estado real
+- [ ] no hay secretos expuestos en repositorio ni snapshots compartidos
 
 ---
 
-## Próximo objetivo real
+## Regla operativa actual
 
-Cerrar validación final de Fase 3.5 y preparar entrada limpia a:
-- Fase 4 — UX
-- Fase 5 — Auth y roles
+Durante esta fase:
+
+- sí:
+  - corregir integración
+  - endurecer permisos
+  - limpiar deuda técnica real
+  - alinear tipos, adapters y esquemas
+  - documentar decisiones importantes
+
+- no:
+  - abrir panel admin completo
+  - agregar nuevas features grandes
+  - meter estado global innecesario
+  - cambiar arquitectura base
+  - iniciar AI/escala antes de cerrar la base
+
+---
+
+## Flujo de datos obligatorio
+
+```txt
+Componente → Hook (React Query) → Service (Axios) → Adapter → API

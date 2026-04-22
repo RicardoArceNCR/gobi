@@ -49,6 +49,8 @@ export function adaptDiputado(diputado: BackendDiputado): Diputado {
       id: c.id,
       nombre: c.nombre,
       descripcion: c.descripcion ?? undefined,
+      miembrosCount: 0,
+      proyectosCount: 0,
     })),
     salario: diputado.salario,
     montoGasolina: diputado.monto_gasolina,

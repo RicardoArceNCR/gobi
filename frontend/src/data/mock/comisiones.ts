@@ -8,28 +8,32 @@ export const COMISIONES: Comision[] = [
     nombre: "Comisión Permanente de Asuntos Económicos",
     descripcion: "Analiza proyectos relacionados con finanzas públicas, presupuestos e impuestos, desarrollo económico y comercio.",
     miembros: DIPUTADOS.filter(d => d.comisionIds.includes("com-001")),
-    proyectosActivos: 12,
+    miembrosCount: DIPUTADOS.filter(d => d.comisionIds.includes("com-001")).length,
+    proyectosCount: 12,
   },
   {
     id: "com-002",
     nombre: "Comisión Permanente de Asuntos Agropecuarios y Recursos Naturales",
     descripcion: "Estudia iniciativas sobre agricultura, ganadería, ambiente, conservación de recursos naturales y energía.",
     miembros: DIPUTADOS.filter(d => d.comisionIds.includes("com-002")),
-    proyectosActivos: 8,
+    miembrosCount: DIPUTADOS.filter(d => d.comisionIds.includes("com-002")).length,
+    proyectosCount: 8,
   },
   {
     id: "com-003",
     nombre: "Comisión Permanente de Asuntos Hacendarios",
     descripcion: "Encargada de tramitar los presupuestos de la República, leyes de deudas y préstamos internacionales.",
     miembros: DIPUTADOS.filter(d => d.comisionIds.includes("com-003")),
-    proyectosActivos: 15,
+    miembrosCount: DIPUTADOS.filter(d => d.comisionIds.includes("com-003")).length,
+    proyectosCount: 15,
   },
   {
     id: "com-004",
     nombre: "Comisión Permanente de Asuntos Jurídicos",
     descripcion: "Revisa proyectos vinculados con códigos, reglamentos e interpretación de las leyes generales.",
     miembros: DIPUTADOS.filter(d => d.comisionIds.includes("com-004")),
-    proyectosActivos: 22,
+    miembrosCount: DIPUTADOS.filter(d => d.comisionIds.includes("com-004")).length,
+    proyectosCount: 22,
   }
 ];
 

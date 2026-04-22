@@ -63,7 +63,7 @@ export function ComisionDetalleView({ id }: { id: string }) {
           </div>
           <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-100">
             <span className="block text-xs uppercase font-bold text-green-400">Proyectos</span>
-            <span className="text-xl font-bold text-green-700">{comision.proyectosActivos ?? comision.proyectos?.length ?? 0}</span>
+            <span className="text-xl font-bold text-green-700">{comision.proyectosCount ?? comision.proyectos?.length ?? 0}</span>
           </div>
         </div>
       </div>

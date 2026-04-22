@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
 import { FeedLegislativo } from "@/features/proyectos/FeedLegislativo";
-import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Inicio | GOBi",
+  description:
+    "Actividad legislativa reciente, proyectos y contexto político navegable.",
 };
 
 export default function HomePage() {

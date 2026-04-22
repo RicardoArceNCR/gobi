@@ -11,7 +11,8 @@ from app.schemas.proyecto import (
     ProyectoCreate, ProyectoUpdate, CambioEstadoCreate
 )
 from app.schemas.common import PaginatedResponse
-from app.core.auth import get_current_user, require_admin
+from app.core.auth import get_current_user
+from app.core.permissions import require_capability
 from app.services.bitacora import registrar
 from datetime import datetime
 
@@ -95,7 +96,7 @@ def obtener_proyecto(proyecto_id: UUID, db: Session = Depends(get_db)):
 def crear_proyecto(
     body: ProyectoCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_admin),
+    user=Depends(require_capability("proyectos.edit")),
 ):
     if db.query(ProyectoLey).filter(ProyectoLey.codigo == body.codigo).first():
         raise HTTPException(status_code=400, detail=f"Ya existe el expediente {body.codigo}")
@@ -129,7 +130,7 @@ def actualizar_proyecto(
     proyecto_id: UUID,
     body: ProyectoUpdate,
     db: Session = Depends(get_db),
-    user=Depends(require_admin),
+    user=Depends(require_capability("proyectos.edit")),
 ):
     proyecto = db.query(ProyectoLey).filter(ProyectoLey.id == proyecto_id).first()
     if not proyecto:
@@ -179,7 +180,7 @@ def cambiar_estado(
     proyecto_id: UUID,
     body: CambioEstadoCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_admin),
+    user=Depends(require_capability("proyectos.change_state")),
 ):
     proyecto = db.query(ProyectoLey).filter(ProyectoLey.id == proyecto_id).first()
     if not proyecto:

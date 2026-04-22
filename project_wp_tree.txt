@@ -36,6 +36,7 @@
 │   ├── README.md
 │   ├── components.json
 │   ├── eslint.config.mjs
+│   ├── m4-clerk-sign
 │   ├── next-env.d.ts
 │   ├── next.config.ts
 │   ├── package-lock.json
@@ -65,9 +66,13 @@
 │   │   │   ├── globals.css
 │   │   │   ├── layout.tsx
 │   │   │   ├── page.tsx
-│   │   │   └── proyectos
-│   │   │       ├── [id]
-│   │   │       └── page.tsx
+│   │   │   ├── proyectos
+│   │   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   ├── sign-in
+│   │   │   │   └── [[...sign-in]]
+│   │   │   └── sign-up
+│   │   │       └── [[...sign-up]]
 │   │   ├── components
 │   │   │   ├── layout
 │   │   │   │   └── Navbar.tsx
@@ -114,8 +119,10 @@
 │   │   │       └── hooks.ts
 │   │   ├── lib
 │   │   │   ├── http.ts
+│   │   │   ├── permissions.ts
 │   │   │   └── utils.ts
 │   │   ├── providers
+│   │   │   ├── AuthProvider.tsx
 │   │   │   └── QueryProvider.tsx
 │   │   ├── services
 │   │   │   ├── api.ts
@@ -151,10 +158,13 @@
 │   │   ├── core
 │   │   │   ├── __pycache__
 │   │   │   │   ├── auth.cpython-313.pyc
-│   │   │   │   └── config.cpython-313.pyc
+│   │   │   │   ├── config.cpython-313.pyc
+│   │   │   │   ├── deps.cpython-313.pyc
+│   │   │   │   └── permissions.cpython-313.pyc
 │   │   │   ├── auth.py
 │   │   │   ├── config.py
-│   │   │   └── deps.py
+│   │   │   ├── deps.py
+│   │   │   └── permissions.py
 │   │   ├── database.py
 │   │   ├── main.py
 │   │   ├── models
@@ -229,40 +239,38 @@
 │       │   ├── pyrsa-verify
 │       │   ├── python -> python3.13
 │       │   ├── python3 -> python3.13
+│       │   ├── python3.11 -> python
 │       │   ├── python3.13 -> /Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13
 │       │   ├── uvicorn
 │       │   ├── watchfiles
 │       │   └── websockets
 │       ├── include
+│       │   ├── python3.11
 │       │   └── python3.13
 │       ├── lib
+│       │   ├── python3.11
+│       │   │   └── site-packages
 │       │   └── python3.13
 │       │       └── site-packages
 │       └── pyvenv.cfg
-├── j1-estrategia.txt
-├── j2-config-entorno.txt
-├── j3-auth.txt
-├── j4-contrato-adapters.txt
-├── j5-services-hooks.txt
-├── j6-vistas.txt
-├── j7-backend-dominio.txt
-├── j8-migraciones.txt
 ├── project_wp_tree.txt
-└── public
-    └── imgs
-        ├── Comunicados-1.png
-        ├── Comunicados-2.png
-        ├── Comunicados-3.png
-        ├── Comunicados.png
-        ├── Filters.png
-        ├── Perfil diputado.png
-        ├── asamblea-comunicado-2.png
-        ├── categorias.png
-        ├── comision de juventud, ninez y adolescencia.png
-        ├── comisiones.png
-        ├── fracciones.png
-        ├── gobierno-integrantes.png
-        ├── login.png
-        └── pop-up.png
+├── public
+│   └── imgs
+│       ├── Comunicados-1.png
+│       ├── Comunicados-2.png
+│       ├── Comunicados-3.png
+│       ├── Comunicados.png
+│       ├── Filters.png
+│       ├── Perfil diputado.png
+│       ├── asamblea-comunicado-2.png
+│       ├── categorias.png
+│       ├── comision de juventud, ninez y adolescencia.png
+│       ├── comisiones.png
+│       ├── fracciones.png
+│       ├── gobierno-integrantes.png
+│       ├── login.png
+│       └── pop-up.png
+├── q1-frontend.txt
+└── q2-backend.txt
 
-57 directories, 209 files
+64 directories, 210 files

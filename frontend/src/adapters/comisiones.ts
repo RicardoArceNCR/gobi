@@ -60,8 +60,8 @@ export function adaptComisionResumen(comision: BackendComisionResumen): Comision
     nombre: comision.nombre,
     descripcion: comision.descripcion ?? undefined,
     miembros: undefined,
-    miembrosCount: comision.miembros_count,
-    proyectosActivos: comision.proyectos_count,
+    miembrosCount: comision.miembros_count ?? 0,
+    proyectosCount: comision.proyectos_count ?? 0,
   };
 }
 
@@ -72,7 +72,7 @@ export function adaptComisionDetalle(comision: BackendComisionDetalle): Comision
     descripcion: comision.descripcion ?? undefined,
     miembros: (comision.miembros ?? []).map(adaptDiputadoResumen),
     miembrosCount: (comision.miembros ?? []).length,
-    proyectosActivos: (comision.proyectos ?? []).length,
+    proyectosCount: (comision.proyectos ?? []).length,
     proyectos: (comision.proyectos ?? []).map((p) => ({
       id: p.id,
       codigo: p.codigo,

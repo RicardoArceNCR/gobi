@@ -1,3 +1,6 @@
+========================================
+FILE: frontend/src/features/proyectos/ProyectoHeader.tsx
+========================================
 "use client";
 
 import { useUser } from "@clerk/nextjs";
@@ -79,3 +82,77 @@ export function ProyectoHeader({ proyecto }: Props) {
     </div>
   );
 }
+
+========================================
+FILE: frontend/src/features/proyectos/ProyectoDocumentos.tsx
+========================================
+"use client";
+
+import { formatearFecha } from "@/lib/utils";
+import type { Documento } from "@/types";
+
+interface Props {
+  documentos: Documento[];
+}
+
+export function ProyectoDocumentos({ documentos }: Props) {
+  if (!documentos || documentos.length === 0) return null;
+
+  return (
+    <section>
+      <h3 className="text-lg font-bold text-gray-900 mb-5">Documentos Adjuntos</h3>
+      <ul className="space-y-3">
+        {documentos.map((doc) => (
+          <li key={doc.id}>
+            <a 
+              href={doc.url} 
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-start gap-3 p-4 bg-white border rounded-xl hover:shadow-md hover:border-blue-200 transition group"
+            >
+              <span className="text-2xl grayscale group-hover:grayscale-0 transition">
+                {doc.tipo === "audio" ? "🎵" : doc.tipo === "video" ? "🎬" : "📄"}
+              </span>
+              <div>
+                <span className="font-medium text-blue-600 line-clamp-1 group-hover:underline">{doc.nombre}</span>
+                <span className="text-xs text-gray-500">
+                  {doc.fechaSubida ? formatearFecha(doc.fechaSubida) : "Fecha no disponible"}
+                </span>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+========================================
+FILE: gobi-backend/app/main.py
+========================================
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.core.config import settings
+from app.routers import proyectos, diputados, comisiones, temas, partidos
+
+app = FastAPI(title="GOBi API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(proyectos.router)
+app.include_router(diputados.router)
+app.include_router(comisiones.router)
+app.include_router(temas.router)
+app.include_router(partidos.router)
+# app.include_router(comunicados.router)  # agregar al crear ese módulo
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+

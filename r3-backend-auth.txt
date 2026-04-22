@@ -1,4 +1,107 @@
 ========================================
+FILE: gobi-backend/app/core/auth.py
+========================================
+from fastapi import HTTPException, Security
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from clerk_backend_api import Clerk
+from app.core.config import settings
+
+security = HTTPBearer()
+clerk = Clerk(bearer_auth=settings.CLERK_SECRET_KEY)
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    token = credentials.credentials
+    try:
+        payload = clerk.verify_token(token)
+
+        public_metadata = payload.get("public_metadata", {}) or {}
+        unsafe_metadata = payload.get("unsafe_metadata", {}) or {}
+
+        nombre = (
+            payload.get("name")
+            or payload.get("nombre")
+            or payload.get("given_name")
+            or unsafe_metadata.get("nombre")
+            or public_metadata.get("nombre")
+            or "Usuario"
+        )
+
+        email = (
+            payload.get("email")
+            or unsafe_metadata.get("email")
+            or public_metadata.get("email")
+            or ""
+        )
+
+        return {
+            "user_id": payload["sub"],
+            "rol": public_metadata.get("rol", "ciudadano"),
+            "nombre": nombre,
+            "email": email,
+        }
+    except Exception:
+        raise HTTPException(status_code=401, detail="Token inválido o expirado")
+
+async def require_admin(user=Security(get_current_user)):
+    if user["rol"] != "admin":
+        raise HTTPException(status_code=403, detail="Se requiere rol de administrador")
+    return user
+
+========================================
+FILE: gobi-backend/app/core/permissions.py
+========================================
+from fastapi import HTTPException, Security
+from typing import Callable
+
+from app.core.auth import get_current_user
+
+Capability = str
+
+ROLE_CAPABILITIES = {
+    "ciudadano": {
+        "proyectos.view",
+        "diputados.view",
+        "comisiones.view",
+        "documentos.download",
+    },
+    "diputado": {
+        "proyectos.view",
+        "diputados.view",
+        "comisiones.view",
+        "documentos.download",
+    },
+    "admin": {
+        "proyectos.view",
+        "proyectos.edit",
+        "proyectos.change_state",
+        "diputados.view",
+        "comisiones.view",
+        "documentos.download",
+        "bitacora.view",
+    },
+}
+
+
+def has_capability(user: dict, capability: Capability) -> bool:
+    rol = user.get("rol", "ciudadano")
+    capabilities = ROLE_CAPABILITIES.get(rol, ROLE_CAPABILITIES["ciudadano"])
+    return capability in capabilities
+
+
+def require_capability(capability: Capability) -> Callable:
+    async def dependency(user=Security(get_current_user)):
+        if not has_capability(user, capability):
+            raise HTTPException(
+                status_code=403,
+                detail=f"No tienes permiso para: {capability}"
+            )
+        return user
+
+    return dependency
+
+========================================
 FILE: gobi-backend/app/routers/proyectos.py
 ========================================
 from fastapi import APIRouter, Depends, Query, HTTPException
@@ -14,7 +117,8 @@ from app.schemas.proyecto import (
     ProyectoCreate, ProyectoUpdate, CambioEstadoCreate
 )
 from app.schemas.common import PaginatedResponse
-from app.core.auth import get_current_user, require_admin
+from app.core.auth import get_current_user
+from app.core.permissions import require_capability
 from app.services.bitacora import registrar
 from datetime import datetime
 
@@ -98,7 +202,7 @@ def obtener_proyecto(proyecto_id: UUID, db: Session = Depends(get_db)):
 def crear_proyecto(
     body: ProyectoCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_admin),
+    user=Depends(require_capability("proyectos.edit")),
 ):
     if db.query(ProyectoLey).filter(ProyectoLey.codigo == body.codigo).first():
         raise HTTPException(status_code=400, detail=f"Ya existe el expediente {body.codigo}")
@@ -132,7 +236,7 @@ def actualizar_proyecto(
     proyecto_id: UUID,
     body: ProyectoUpdate,
     db: Session = Depends(get_db),
-    user=Depends(require_admin),
+    user=Depends(require_capability("proyectos.edit")),
 ):
     proyecto = db.query(ProyectoLey).filter(ProyectoLey.id == proyecto_id).first()
     if not proyecto:
@@ -182,7 +286,7 @@ def cambiar_estado(
     proyecto_id: UUID,
     body: CambioEstadoCreate,
     db: Session = Depends(get_db),
-    user=Depends(require_admin),
+    user=Depends(require_capability("proyectos.change_state")),
 ):
     proyecto = db.query(ProyectoLey).filter(ProyectoLey.id == proyecto_id).first()
     if not proyecto:
@@ -232,173 +336,4 @@ def cambiar_estado(
     db.commit()
     db.refresh(proyecto)
     return proyecto
-
-========================================
-FILE: gobi-backend/app/routers/diputados.py
-========================================
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session, joinedload, selectinload
-from uuid import UUID
-from typing import Optional
-
-from app.database import get_db
-from app.models.diputado import Diputado
-from app.schemas.diputado import DiputadoOut
-from app.schemas.common import PaginatedResponse
-
-router = APIRouter(prefix="/diputados", tags=["diputados"])
-
-
-@router.get("", response_model=PaginatedResponse[DiputadoOut])
-def listar_diputados(
-    partido: Optional[str] = None,
-    busqueda: Optional[str] = None,
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db),
-):
-    q = db.query(Diputado).options(
-        joinedload(Diputado.partido),
-        selectinload(Diputado.comisiones),
-    )
-
-    if busqueda:
-        q = q.filter(Diputado.nombre.ilike(f"%{busqueda}%"))
-
-    if partido:
-        from app.models.diputado import Partido
-        q = q.join(Partido).filter(Partido.nombre.ilike(f"%{partido}%"))
-
-    total = q.count()
-    items = q.offset((page - 1) * page_size).limit(page_size).all()
-
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-        "total_pages": -(-total // page_size),
-    }
-
-
-@router.get("/{diputado_id}", response_model=DiputadoOut)
-def obtener_diputado(diputado_id: UUID, db: Session = Depends(get_db)):
-    diputado = (
-        db.query(Diputado)
-        .options(
-            joinedload(Diputado.partido),
-            selectinload(Diputado.comisiones),
-        )
-        .filter(Diputado.id == diputado_id)
-        .first()
-    )
-
-    if not diputado:
-        raise HTTPException(status_code=404, detail="Diputado no encontrado")
-
-    return diputado
-
-========================================
-FILE: gobi-backend/app/routers/comisiones.py
-========================================
-from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy.orm import Session, selectinload, joinedload
-from uuid import UUID
-from typing import Optional
-
-from app.database import get_db
-from app.models.comision import Comision
-from app.models.diputado import Diputado
-from app.schemas.comision import ComisionResumenOut, ComisionDetalleOut, ComisionListaOut
-from app.schemas.common import PaginatedResponse
-
-router = APIRouter(prefix="/comisiones", tags=["comisiones"])
-
-
-@router.get("", response_model=PaginatedResponse[ComisionListaOut])
-def listar_comisiones(
-    busqueda: Optional[str] = None,
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-    db: Session = Depends(get_db),
-):
-    q = db.query(Comision).options(
-        selectinload(Comision.miembros),
-        selectinload(Comision.proyectos)
-    )
-
-    if busqueda:
-        q = q.filter(Comision.nombre.ilike(f"%{busqueda}%"))
-
-    total = q.count()
-    comisiones = q.offset((page - 1) * page_size).limit(page_size).all()
-
-    # Enriquecer con conteos
-    items = []
-    for c in comisiones:
-        comision_dict = ComisionListaOut.model_validate(c).model_dump()
-        comision_dict["miembros_count"] = len(c.miembros)
-        comision_dict["proyectos_count"] = len(c.proyectos)
-        items.append(comision_dict)
-
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-        "total_pages": -(-total // page_size),
-    }
-
-
-@router.get("/{comision_id}", response_model=ComisionDetalleOut)
-def obtener_comision(comision_id: UUID, db: Session = Depends(get_db)):
-    comision = (
-        db.query(Comision)
-        .options(
-            selectinload(Comision.miembros).joinedload(Diputado.partido),
-            selectinload(Comision.proyectos),
-        )
-        .filter(Comision.id == comision_id)
-        .first()
-    )
-
-    if not comision:
-        raise HTTPException(status_code=404, detail="Comisión no encontrada")
-
-    return comision
-
-========================================
-FILE: gobi-backend/app/services/bitacora.py
-========================================
-from sqlalchemy.orm import Session
-from datetime import datetime
-from typing import Optional
-from app.models.bitacora import EntradaBitacora
-
-def registrar(
-    db: Session,
-    entidad_tipo: str,
-    entidad_id: str,
-    accion: str,
-    motivo: str,
-    usuario_id: str,
-    usuario_nombre: str,
-    campo_modificado: Optional[str] = None,
-    valor_anterior: Optional[str] = None,
-    valor_nuevo: Optional[str] = None,
-):
-    entrada = EntradaBitacora(
-        entidad_tipo=entidad_tipo,
-        entidad_id=entidad_id,
-        accion=accion,
-        campo_modificado=campo_modificado,
-        valor_anterior=valor_anterior,
-        valor_nuevo=valor_nuevo,
-        motivo=motivo,
-        usuario_id=usuario_id,
-        usuario_nombre=usuario_nombre,
-        created_at=datetime.utcnow(),
-    )
-    db.add(entrada)
-    db.flush()
 

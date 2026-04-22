@@ -26,20 +26,20 @@ Plataforma de inteligencia política para Costa Rica. Traduce la actividad legis
 - `/gobi-backend` → API RESTful y lógica de negocio
 - `/docs` → documentación detallada, arquitectura y estrategias de hardening
 
-## Estado actual (Phase 3.5 Hardening Ready)
+## Estado actual
 
-- **Proyectos**: Listado filtrado, paginación, detalle completo (refactorizado), timeline, documentos y votaciones.
-- **Diputados**: Listado con filtros de búsqueda y partido, paginación, perfiles detallados con historial y finanzas.
-- **Comisiones**: Listado con conteos reales (miembros/proyectos), paginación y detalle funcional.
-- **Temas**: Filtros reales conectados a base de datos.
-- **Arquitectura**: Adapters de normalización backend -> frontend, contratos de paginación unificados y manejo de errores estandarizado.
+Fase 3.5 está funcionalmente cerrada y operativa, con:
+- contratos frontend-backend estables mediante adapters,
+- paginación unificada,
+- filtros reales conectados a base de datos,
+- listados y detalles funcionales de proyectos, diputados y comisiones,
+- bitácora base para mutaciones de proyectos.
 
-## Próximos pasos (Fase 4+)
-
-- Implementar estrategia de bitácora (logging) definida.
-- Integración completa de permisos por roles (Ciudadano, Diputado, Admin).
-- Rediseño UX Avanzado (Aesthetics & Micromotions).
-- Auth extremo a extremo (Frontend + Backend).
+Pendientes antes del cierre total de validación:
+- auth extremo a extremo (frontend + backend),
+- permisos mínimos visibles por rol,
+- validación final de bitácora suficiente,
+- alineación final de documentación pública.
 
 ## Requisitos
 - Node.js 20+

@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  SignInButton,
+  UserButton,
+  useUser,
+} from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -13,9 +18,10 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const { isSignedIn, isLoaded } = useUser();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <nav className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-backdrop-filter:bg-white/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center space-x-12">
@@ -40,6 +46,22 @@ export function Navbar() {
                 );
               })}
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {isLoaded && !isSignedIn && (
+              <SignInButton mode="modal">
+                <button className="rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-50">
+                  Iniciar sesión
+                </button>
+              </SignInButton>
+            )}
+            
+            {isLoaded && isSignedIn && (
+              <div className="flex items-center gap-3">
+                <UserButton />
+              </div>
+            )}
           </div>
         </div>
       </div>

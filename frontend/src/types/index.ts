@@ -120,10 +120,14 @@ export interface Comision {
   id: string;
   nombre: string;
   descripcion?: string;
-  miembros?: Diputado[];
-  miembrosCount?: number;
-  proyectosActivos?: number;
-  proyectos?: ProyectoBrief[];
+  miembrosCount: number;
+  proyectosCount: number;
+  miembros?: DiputadoResumen[];
+  proyectos?: {
+    id: string;
+    codigo: string;
+    titulo: string;
+  }[];
 }
 
 export interface FiltrosComision {
